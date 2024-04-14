@@ -1,0 +1,5 @@
+@NetLock_Server_HostAddress = http://localhost:5054
+
+POST {{NetLock_Server_HostAddress}}/Auth/Login/
+Accept: application/json
+

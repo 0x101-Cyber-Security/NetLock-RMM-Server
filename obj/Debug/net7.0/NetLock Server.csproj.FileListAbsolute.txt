@@ -1,0 +1,58 @@
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.csproj.AssemblyReference.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.AssemblyInfoInputs.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.AssemblyInfo.cs
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.csproj.CoreCompileInputs.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.sourcelink.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\appsettings.Development.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\appsettings.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\NetLock Server.exe
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\NetLock Server.deps.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\NetLock Server.runtimeconfig.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\NetLock Server.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\NetLock Server.pdb
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\BouncyCastle.Cryptography.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Google.Protobuf.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\K4os.Compression.LZ4.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\K4os.Compression.LZ4.Streams.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\K4os.Hash.xxHash.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Microsoft.OpenApi.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\MySql.Data.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\System.Configuration.ConfigurationManager.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\System.Drawing.Common.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\System.Security.Permissions.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\System.Windows.Extensions.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\ZstdSharp.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win-x64\native\comerr64.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win-x64\native\gssapi64.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win-x64\native\k5sprt64.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win-x64\native\krb5_64.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win-x64\native\krbcc64.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\bin\Debug\net7.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets.development.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets\msbuild.NetLock Server.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets\msbuild.build.NetLock Server.props
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets\msbuild.buildMultiTargeting.NetLock Server.props
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets\msbuild.buildTransitive.NetLock Server.props
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\staticwebassets.pack.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\scopedcss\bundle\NetLock Server.styles.css
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.csproj.CopyComplete
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\refint\NetLock Server.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.pdb
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\NetLock Server.genruntimeconfig.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock\NetLock Server\obj\Debug\net7.0\ref\NetLock Server.dll
