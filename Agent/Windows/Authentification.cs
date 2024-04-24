@@ -29,7 +29,7 @@ namespace NetLock_Server.Agent.Windows
             public string? gpu { get; set; }
             public string? ram { get; set; }
             public string? tpm { get; set; }
-            public string? environment_variables { get; set; }
+            // public string? environment_variables { get; set; }
         }
 
         public class Root_Entity
@@ -44,18 +44,22 @@ namespace NetLock_Server.Agent.Windows
 
             try
             {
+                Logging.Handler.Debug("Agent.Windows.Authentification.Verify_Device", "json", json);
+
                 Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(json);
 
                 Device_Identity_Entity device_identity = rootData.device_identity;
-                
-                Logging.Handler.Debug("Agent.Windows.Authentification.Verify_Device", "json", json);
 
                 await conn.OpenAsync();
 
-                string reader_query = $"SELECT * FROM `devices` WHERE device_name = '{device_identity.device_name}' AND location_name = '{device_identity.location_name}' AND tenant_name = '{device_identity.tenant_name}';";
+                string reader_query = $"SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
                 Logging.Handler.Debug("Modules.Authentification.Verify_Device", "MySQL_Query", reader_query);
 
                 MySqlCommand command = new MySqlCommand(reader_query, conn);
+                command.Parameters.AddWithValue("@device_name", device_identity.device_name);
+                command.Parameters.AddWithValue("@location_name", device_identity.location_name);
+                command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
+
                 DbDataReader reader = await command.ExecuteReaderAsync();
 
                 string authentification_result = String.Empty;
@@ -68,14 +72,22 @@ namespace NetLock_Server.Agent.Windows
                     {
                         if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "1") //access key & hwid correct
                         {
-                            authentification_result = "authorized";
+                            if (reader["synced"].ToString() == "1")
+                            {
+                                authentification_result = "synced";
+                            }
+                            else if (reader["synced"].ToString() == "0")
+                            {
+                                authentification_result = "not_synced";
+                            }
+                            
                             authorized = "1";
                         }
                         else if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "0") //access key & hwid correct, but not authorized
                         {
-                            authentification_result = "not_authorized";
+                            authentification_result = "unauthorized";
                         }
-                        else if (device_identity.access_key != reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString()) //access key is not correct, but hwid is. Deauthorize the device & set new access key
+                        else if (device_identity.access_key != reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString()) //access key is not correct, but hwid is. Deauthorize the device, set new access key & set not synced
                         {
                             authentification_result = "authorized";
                             authorized = "0";
@@ -163,7 +175,7 @@ namespace NetLock_Server.Agent.Windows
                     cmd.Parameters.AddWithValue("@gpu", device_identity.gpu);
                     cmd.Parameters.AddWithValue("@ram", device_identity.ram);
                     cmd.Parameters.AddWithValue("@tpm", device_identity.tpm);
-                    cmd.Parameters.AddWithValue("@environment_variables", device_identity.environment_variables);
+                    cmd.Parameters.AddWithValue("@environment_variables", "");
 
                     cmd.ExecuteNonQuery();
 
@@ -172,8 +184,19 @@ namespace NetLock_Server.Agent.Windows
                 }
 
                 //Update device data if authorized
-                if (authentification_result == "authorized" && device_exists)
+                if (authentification_result == "authorized" || authentification_result == "synced" || authentification_result == "not_synced" && device_exists)
                 {
+                    string synced = "0";
+
+                    if (authentification_result == "authorized" && authentification_result == "not_synced")
+                    {
+                        synced = "0";
+                    }
+                    else if (authentification_result == "synced")
+                    {
+                        synced = "1";
+                    }
+
                     string execute_query = "UPDATE `devices` SET " +
                         "`agent_version` = @agent_version, " +
                         "`tenant_name` = @tenant_name, " +
@@ -196,7 +219,8 @@ namespace NetLock_Server.Agent.Windows
                         "`gpu` = @gpu, " +
                         "`ram` = @ram, " +
                         "`tpm` = @tpm, " +
-                        "`environment_variables` = @environment_variables " +
+                        "`environment_variables` = @environment_variables, " +
+                        "`synced` = @synced " +
                         "WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name";
 
                     MySqlCommand cmd = new MySqlCommand(execute_query, conn);
@@ -222,7 +246,8 @@ namespace NetLock_Server.Agent.Windows
                     cmd.Parameters.AddWithValue("@gpu", device_identity.gpu);
                     cmd.Parameters.AddWithValue("@ram", device_identity.ram);
                     cmd.Parameters.AddWithValue("@tpm", device_identity.tpm);
-                    cmd.Parameters.AddWithValue("@environment_variables", device_identity.environment_variables);
+                    cmd.Parameters.AddWithValue("@environment_variables", "");
+                    cmd.Parameters.AddWithValue("@synced", synced);
                     
                     cmd.ExecuteNonQuery();
                 }
@@ -231,7 +256,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
+                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.ToString());
                 return "invalid";
             }
             finally

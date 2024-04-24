@@ -27,7 +27,7 @@ namespace NetLock_Server.Agent.Windows
             public string? gpu { get; set; }
             public string? ram { get; set; }
             public string? tpm { get; set; }
-            public string? environment_variables { get; set; }
+            //public string? environment_variables { get; set; }
         }
 
         public class Event_Entity

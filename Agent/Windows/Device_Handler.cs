@@ -30,7 +30,7 @@ namespace NetLock_Server.Agent.Windows
             public string? gpu { get; set; }
             public string? ram { get; set; }
             public string? tpm { get; set; }
-            public string? environment_variables { get; set; }
+            //public string? environment_variables { get; set; }
         }
 
         public class Content_Entity
@@ -371,7 +371,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Agent.Windows.Device_Handler.Update_Device_Information", "Result", ex.Message);
+                Logging.Handler.Error("Agent.Windows.Device_Handler.Update_Device_Information", "Result", ex.ToString());
                 return "invalid";
             }
             finally

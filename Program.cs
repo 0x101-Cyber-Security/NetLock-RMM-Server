@@ -96,7 +96,7 @@ app.MapPost("/Agent/Windows/Update_Device_Information", async context =>
 
         string device_status = await Authentification.Verify_Device(json, ip_address_external);
 
-        if (device_status == "authorized")
+        if (device_status == "authorized" || device_status == "synced" || device_status == "not_synced")
         {
             await Device_Handler.Update_Device_Information(json);
             context.Response.StatusCode = 200;
