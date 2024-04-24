@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "lB8Ce6BB7ftlLTj3Joe9uqpLX3xQA70Lle3scgHM7qg=",
-  "Source": "NetLock Server",
-  "BasePath": "_content/NetLock Server",
+  "Hash": "pqdjA5hEfWUOITW5kb17aucjOaqUj6i+GOR4a0P3L5I=",
+  "Source": "NetLock RMM Server",
+  "BasePath": "_content/NetLock RMM Server",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],

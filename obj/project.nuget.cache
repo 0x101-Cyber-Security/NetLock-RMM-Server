@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "YZc6GyQJKIjXdsIjp++7MUBzTghk8+JsfU20oqYOXKWGaPYYKibvEZdwa8IygNmFZNUxqooJgYNIjCugUpMm7g==",
+  "dgSpecHash": "HYsxbniq3gOk3MQSCmq2xKapAIWR1fPVuZ3LR5FBKEr+kHfgM1p36M3vavYSqRZ2fLaj4uS14kN1gWVBxDEqvQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\Projekte\\NetLock\\NetLock Server\\NetLock RMM Server.csproj",
+  "projectFilePath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\Projekte\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.0\\microsoft.aspnetcore.openapi.8.0.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",

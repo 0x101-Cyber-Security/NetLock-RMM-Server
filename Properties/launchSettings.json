@@ -36,5 +36,8 @@
       "applicationUrl": "http://localhost:28260",
       "sslPort": 44374
     }
+  },
+  "agent_versions": {
+    "windows": "1.0.0.0"
   }
 }

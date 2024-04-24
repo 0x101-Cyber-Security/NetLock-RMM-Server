@@ -11,44 +11,44 @@ namespace NetLock_Server.Agent.Windows
     {
         public class Device_Identity_Entity
         {
-            public string agent_version { get; set; }
-            public string device_name { get; set; }
-            public string location_name { get; set; }
-            public string tenant_name { get; set; }
-            public string access_key { get; set; }
-            public string hwid { get; set; }
-            public string ip_address_internal { get; set; }
-            public string operating_system { get; set; }
-            public string domain { get; set; }
-            public string antivirus_solution { get; set; }
-            public string firewall_status { get; set; }
-            public string architecture { get; set; }
-            public string last_boot { get; set; }
-            public string timezone { get; set; }
-            public string cpu { get; set; }
-            public string mainboard { get; set; }
-            public string gpu { get; set; }
-            public string ram { get; set; }
-            public string tpm { get; set; }
-            public string environment_variables { get; set; }
+            public string? agent_version { get; set; }
+            public string? device_name { get; set; }
+            public string? location_name { get; set; }
+            public string? tenant_name { get; set; }
+            public string? access_key { get; set; }
+            public string? hwid { get; set; }
+            public string? ip_address_internal { get; set; }
+            public string? operating_system { get; set; }
+            public string? domain { get; set; }
+            public string? antivirus_solution { get; set; }
+            public string? firewall_status { get; set; }
+            public string? architecture { get; set; }
+            public string? last_boot { get; set; }
+            public string? timezone { get; set; }
+            public string? cpu { get; set; }
+            public string? mainboard { get; set; }
+            public string? gpu { get; set; }
+            public string? ram { get; set; }
+            public string? tpm { get; set; }
+            public string? environment_variables { get; set; }
         }
 
         public class Content_Entity
         {
-            public string network_adapters { get; set; }
-            public string disks { get; set; }
-            public string applications_installed { get; set; }
-            public string applications_logon { get; set; }
-            public string applications_scheduled_tasks { get; set; }
-            public string applications_drivers { get; set; }
-            public string applications_services { get; set; }
-            public string antivirus_information { get; set; }
+            public string? network_adapters { get; set; }
+            public string? disks { get; set; }
+            public string? applications_installed { get; set; }
+            public string? applications_logon { get; set; }
+            public string? applications_scheduled_tasks { get; set; }
+            public string? applications_drivers { get; set; }
+            public string? applications_services { get; set; }
+            public string? antivirus_information { get; set; }
         }
 
-        public class Root
+        public class Root_Entity
         {
-            public Device_Identity_Entity device_identity { get; set; }
-            public Content_Entity content { get; set; }
+            public Device_Identity_Entity? device_identity { get; set; }
+            public Content_Entity? content { get; set; }
         }
 
 
@@ -59,7 +59,7 @@ namespace NetLock_Server.Agent.Windows
             try
             {
                 //Extract JSON
-                Root rootData = JsonSerializer.Deserialize<Root>(json);
+                Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(json);
                 Device_Identity_Entity device_identity = rootData.device_identity;
                 //Content_Entity content = rootData.content;
 
@@ -78,7 +78,6 @@ namespace NetLock_Server.Agent.Windows
                 string processes_json_string = String.Empty;
                 string antivirus_products_json_string = String.Empty;
                 string antivirus_information_json_string = String.Empty;
-
 
                 // Deserialisierung des gesamten JSON-Strings
                 using (JsonDocument document = JsonDocument.Parse(json))

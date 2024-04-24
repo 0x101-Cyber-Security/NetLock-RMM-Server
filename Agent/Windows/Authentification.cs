@@ -10,31 +10,31 @@ namespace NetLock_Server.Agent.Windows
     {
         public class Device_Identity_Entity
         {
-            public string agent_version { get; set; }
-            public string device_name { get; set; }
-            public string location_name { get; set; }
-            public string tenant_name { get; set; }
-            public string access_key { get; set; }
-            public string hwid { get; set; }
-            public string ip_address_internal { get; set; }
-            public string operating_system { get; set; }
-            public string domain { get; set; }
-            public string antivirus_solution { get; set; }
-            public string firewall_status { get; set; }
-            public string architecture { get; set; }
-            public string last_boot { get; set; }
-            public string timezone { get; set; }
-            public string cpu { get; set; }
-            public string mainboard { get; set; }
-            public string gpu { get; set; }
-            public string ram { get; set; }
-            public string tpm { get; set; }
-            public string environment_variables { get; set; }
+            public string? agent_version { get; set; }
+            public string? device_name { get; set; }
+            public string? location_name { get; set; }
+            public string? tenant_name { get; set; }
+            public string? access_key { get; set; }
+            public string? hwid { get; set; }
+            public string? ip_address_internal { get; set; }
+            public string? operating_system { get; set; }
+            public string? domain { get; set; }
+            public string? antivirus_solution { get; set; }
+            public string? firewall_status { get; set; }
+            public string? architecture { get; set; }
+            public string? last_boot { get; set; }
+            public string? timezone { get; set; }
+            public string? cpu { get; set; }
+            public string? mainboard { get; set; }
+            public string? gpu { get; set; }
+            public string? ram { get; set; }
+            public string? tpm { get; set; }
+            public string? environment_variables { get; set; }
         }
 
-        public class Root
+        public class Root_Entity
         {
-            public Device_Identity_Entity device_identity { get; set; }
+            public Device_Identity_Entity? device_identity { get; set; }
         }
 
 
@@ -44,7 +44,7 @@ namespace NetLock_Server.Agent.Windows
 
             try
             {
-                Root rootData = JsonSerializer.Deserialize<Root>(json);
+                Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(json);
 
                 Device_Identity_Entity device_identity = rootData.device_identity;
                 
