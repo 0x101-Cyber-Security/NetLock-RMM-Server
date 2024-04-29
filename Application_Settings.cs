@@ -2,6 +2,6 @@
 { 
     public class Application_Settings
     {
-        public static string connectionString = @"Server=127.0.0.1;Database=netlocb_db1;User=root;Password=9rcSgCRetFkkB6ZNEGcg;";
+        public static string connectionString = @"Server=sql705.your-server.de;Database=netlocb_db1;User=netlocb_1;Password=9rcSgCRetFkkB6ZNEGcg;";
     }
 }

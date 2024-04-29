@@ -279,7 +279,6 @@ namespace NetLock_Server.Agent.Windows
                 string device_information_general_history_execute_query = "INSERT INTO `device_information_general_history` (`tenant_name`, `location_name`, `device_name`, `date`, `policy_name`, `ip_address_internal`, `ip_address_external`, `network_adapters`, `json`) VALUES (@tenant_name, @location_name, @device_name, @date, @policy_name, @ip_address_internal, @ip_address_external, @network_adapters, @json);";
 
                 MySqlCommand device_information_general_history_cmd = new MySqlCommand(device_information_general_history_execute_query, conn);
-
                 device_information_general_history_cmd.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@location_name", device_identity.location_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@device_name", device_identity.device_name);
