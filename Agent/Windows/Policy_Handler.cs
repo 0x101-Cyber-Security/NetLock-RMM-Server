@@ -433,7 +433,29 @@ namespace NetLock_Server.Agent.Windows
                 }
                 finally
                 {
-                    conn.Close();
+                    //await conn.CloseAsync();
+                }
+
+                // Set synced = 1
+                try
+                {
+                    string execute_query = "UPDATE devices SET synced = 1 WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+
+                    MySqlCommand command = new MySqlCommand(execute_query, conn);
+                    command.Parameters.AddWithValue("@tenant_name", tenant_name);
+                    command.Parameters.AddWithValue("@location_name", location_name);
+                    command.Parameters.AddWithValue("@device_name", device_name);
+
+                    command.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Logging.Handler.Error("Agent.Windows.Policy_Handler.Get_Policy (set synced = 1)", "Result", ex.Message);
+                }
+                finally
+                {
+                    
+                    await conn.CloseAsync();
                 }
 
                 // Create sensors json

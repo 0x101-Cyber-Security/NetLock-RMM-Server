@@ -89,7 +89,7 @@ namespace NetLock_Server.Agent.Windows
 
                 await conn.CloseAsync();
 
-                return "authorized";
+                return "success";
             }
             catch (Exception ex)
             {
