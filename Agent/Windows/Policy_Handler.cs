@@ -2,10 +2,11 @@
 using System.Data.Common;
 using Microsoft.AspNetCore.Identity;
 using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Xml.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Text.Json;
+using System.Security;
 
 namespace NetLock_Server.Agent.Windows
 {
@@ -158,6 +159,7 @@ namespace NetLock_Server.Agent.Windows
                 string antivirus_exclusions_json = string.Empty;
                 string antivirus_scan_jobs_json = string.Empty;
                 string antivirus_controlled_folder_access_folders_json = string.Empty;
+                string antivirus_controlled_folder_access_ruleset_json = string.Empty;
                 string sensors_json = string.Empty;
                 string jobs_json = string.Empty;
 
@@ -436,6 +438,44 @@ namespace NetLock_Server.Agent.Windows
                     //await conn.CloseAsync();
                 }
 
+                // Get antivirus controlled folder access ruleset from database
+                try
+                {
+                    string ruleset_name = String.Empty;
+
+                    using (JsonDocument document = JsonDocument.Parse(antivirus_settings_json))
+                    {
+                        JsonElement controlled_folder_access_ruleset_element = document.RootElement.GetProperty("controlled_folder_access_ruleset");
+                        ruleset_name = controlled_folder_access_ruleset_element.ToString();
+                    }
+
+                    string query = "SELECT * FROM antivirus_controlled_folder_access_rulesets WHERE name = @name;";
+
+                    MySqlCommand command = new MySqlCommand(query, conn);
+                    command.Parameters.AddWithValue("@name", ruleset_name);
+
+                    Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy (antivirus_controlled_folder_access_rulesets)", "MySQL_Prepared_Query", query);
+
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (reader.HasRows)
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                antivirus_controlled_folder_access_ruleset_json = reader["json"].ToString();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Handler.Error("Agent.Windows.Policy_Handler.Get_Policy", "MySQL_Query", ex.ToString());
+                }
+                finally
+                {
+                    //await conn.CloseAsync();
+                }
+
                 // Set synced = 1
                 try
                 {
@@ -454,7 +494,6 @@ namespace NetLock_Server.Agent.Windows
                 }
                 finally
                 {
-                    
                     await conn.CloseAsync();
                 }
 
@@ -468,6 +507,7 @@ namespace NetLock_Server.Agent.Windows
                     antivirus_exclusions_json,
                     antivirus_scan_jobs_json,
                     antivirus_controlled_folder_access_folders_json,
+                    antivirus_controlled_folder_access_ruleset_json,
                     policy_sensors_json,
                     policy_jobs_json
                 };
