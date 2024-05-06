@@ -67,13 +67,38 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "type", _event.type);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "language", _event.language);
 
-                //Insert into database
+                // Get device id from database
+                string device_id = String.Empty;
+
+                // Open connection
                 await conn.OpenAsync();
 
-                string execute_query = "INSERT INTO `events` (`tenant_name`, `location_name`, `device_name`, `date`, `severity`, `reported_by`, `_event`, `description`, `type`, `language`) VALUES (@tenant_name, @location_name, @device_name, @date, @severity, @reported_by, @event, @description, @type, @language)";
+                string reader_query = "SELECT * FROM devices WHERE tenant_name = @tenant_name AND location_name = @location_name AND device_name = @device_name;";
+
+                MySqlCommand command = new MySqlCommand("SELECT * FROM devices WHERE tenant_name = @tenant_name AND location_name = @location_name AND device_name = @device_name;", conn);
+                command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
+                command.Parameters.AddWithValue("@location_name", device_identity.location_name);
+                command.Parameters.AddWithValue("@device_name", device_identity.device_name);
+
+                Logging.Handler.Debug("Example", "MySQL_Prepared_Query", reader_query);
+
+                using (DbDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            device_id = reader["id"].ToString();
+                        }
+                    }
+                }
+
+                //Insert into database
+                string execute_query = "INSERT INTO `events` ( `device_id`, `tenant_name_snapshot`, `location_name_snapshot`, `device_name`, `date`, `severity`, `reported_by`, `_event`, `description`, `type`, `language`) VALUES (@device_id, @tenant_name, @location_name, @device_name, @date, @severity, @reported_by, @event, @description, @type, @language)";
 
                 MySqlCommand cmd = new MySqlCommand(execute_query, conn);
 
+                cmd.Parameters.AddWithValue("@device_id", device_id);
                 cmd.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
                 cmd.Parameters.AddWithValue("@location_name", device_identity.location_name);
                 cmd.Parameters.AddWithValue("@device_name", device_identity.device_name);
@@ -93,7 +118,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Agent.Windows.Event_Handler.Consume", "Result", ex.Message);
+                Logging.Handler.Error("Agent.Windows.Event_Handler.Consume", "General error", ex.ToString());
                 return "invalid";
             }
             finally

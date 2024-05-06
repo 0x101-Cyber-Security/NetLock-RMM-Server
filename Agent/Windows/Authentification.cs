@@ -256,7 +256,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.ToString());
+                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "General error", ex.ToString());
                 return "invalid";
             }
             finally

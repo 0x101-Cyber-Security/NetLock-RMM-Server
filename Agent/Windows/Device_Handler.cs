@@ -370,7 +370,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Agent.Windows.Device_Handler.Update_Device_Information", "Result", ex.ToString());
+                Logging.Handler.Error("Agent.Windows.Device_Handler.Update_Device_Information", "General error", ex.ToString());
                 return "invalid";
             }
             finally

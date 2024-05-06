@@ -519,7 +519,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Agent.Windows.Version_Handler.Check_Version", "", ex.ToString());
+                Logging.Handler.Error("Agent.Windows.Version_Handler.Check_Version", "General error", ex.ToString());
                 return "Invalid request.";
             }
         }

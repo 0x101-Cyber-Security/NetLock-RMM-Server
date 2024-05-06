@@ -163,9 +163,9 @@ app.MapPost("/Agent/Windows/Events", async context =>
         string device_status = await Authentification.Verify_Device(json, ip_address_external);
 
         // Check if the device is authorized. If so, consume the events
-        if (device_status == "authorized")
+        if (device_status == "authorized" || device_status == "synced" || device_status == "not_synced")
         {
-            await Event_Handler.Consume(json);
+            device_status = await Event_Handler.Consume(json);
             context.Response.StatusCode = 200;
         }
         else
