@@ -47,7 +47,7 @@ namespace Logging
 
                 string log_json = JsonSerializer.Serialize(json_object, options);
 
-                File.AppendAllText(Application_Paths.program_data_logs + @"\system_logs.txt", log_json + Environment.NewLine);
+                File.AppendAllText(Application_Paths.program_data_logs + @"\debug.txt", log_json + Environment.NewLine);
             }
             catch
             { }
@@ -72,7 +72,7 @@ namespace Logging
                 };
 
                 string log_json = JsonSerializer.Serialize(json_object, options);
-                File.AppendAllText(Application_Paths.program_data_logs + @"\system_logs.txt", log_json + Environment.NewLine);
+                File.AppendAllText(Application_Paths.program_data_logs + @"\error.txt", log_json + Environment.NewLine);
             }
             catch
             { }

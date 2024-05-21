@@ -56,18 +56,23 @@ namespace NetLock_Server.Agent.Windows
 
         public class Sensors_Entity
         {
+            public string id { get; set; }
             public string name { get; set; }
             public string date { get; set; }
+            public string last_run { get; set; }
             public string author { get; set; }
             public string description { get; set; }
             public int severity { get; set; }
             public int category { get; set; }
             public int sub_category { get; set; }
             public int utilization_category { get; set; }
+            public int notification_treshold_count { get; set; }
             public int notification_treshold_max { get; set; }
+            public int action_treshold_count { get; set; }
             public int action_treshold_max { get; set; }
-            public string powershell_code { get; set; }
-            public string powershell_code_action { get; set; }
+            public string action_history { get; set; }
+            public string script { get; set; }
+            public string script_action { get; set; }
             public int cpu_usage { get; set; }
             public int ram_usage { get; set; }
             public int disk_usage { get; set; }
@@ -90,7 +95,7 @@ namespace NetLock_Server.Agent.Windows
             public string ping_hostname { get; set; }
 
             //time schedule
-            public string time_scheduler_type { get; set; }
+            public int time_scheduler_type { get; set; }
             public int time_scheduler_seconds { get; set; }
             public int time_scheduler_minutes { get; set; }
             public int time_scheduler_hours { get; set; }
@@ -112,6 +117,7 @@ namespace NetLock_Server.Agent.Windows
 
         public class Jobs_Entity
         {
+            public string id { get; set; }
             public string name { get; set; }
             public string date { get; set; }
             public string author { get; set; }
@@ -120,7 +126,7 @@ namespace NetLock_Server.Agent.Windows
             public string type { get; set; }
             public string script { get; set; }
 
-            public string time_scheduler_type { get; set; }
+            public int time_scheduler_type { get; set; }
             public int time_scheduler_seconds { get; set; }
             public int time_scheduler_minutes { get; set; }
             public int time_scheduler_hours { get; set; }
@@ -419,7 +425,7 @@ namespace NetLock_Server.Agent.Windows
 
                                     if (job.id == reader["id"].ToString())
                                     {
-                                        Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "job_json", jobs_json);
+                                        Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "job_json", reader["json"].ToString());
 
                                         Jobs_Entity job_object = JsonConvert.DeserializeObject<Jobs_Entity>(reader["json"].ToString());
                                         jobs_list.Add(job_object);
@@ -437,6 +443,9 @@ namespace NetLock_Server.Agent.Windows
                 {
                     //await conn.CloseAsync();
                 }
+
+                // Create jobs json
+                string policy_jobs_json = JsonConvert.SerializeObject(jobs_list);
 
                 // Get antivirus controlled folder access ruleset from database
                 try
@@ -496,9 +505,6 @@ namespace NetLock_Server.Agent.Windows
                 {
                     await conn.CloseAsync();
                 }
-
-                // Create sensors json
-                string policy_jobs_json = JsonConvert.SerializeObject(jobs_list);
 
                 // Create policy JSON
                 var jsonObject = new
