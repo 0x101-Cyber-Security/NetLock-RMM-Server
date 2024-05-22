@@ -79,8 +79,8 @@ namespace NetLock_Server.Agent.Windows
             public int disk_minimum_capacity { get; set; }
             public int disk_category { get; set; }
             public string disk_letters { get; set; }
-            public bool include_network_disks { get; set; }
-            public bool include_removable_disks { get; set; }
+            public bool disk_include_network_disks { get; set; }
+            public bool disk_include_removable_disks { get; set; }
             public string eventlog { get; set; }
             public string eventlog_category { get; set; }
             public string eventlog_event_id { get; set; }
