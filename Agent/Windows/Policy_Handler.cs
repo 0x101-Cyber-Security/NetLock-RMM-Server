@@ -70,10 +70,12 @@ namespace NetLock_Server.Agent.Windows
             public int notification_treshold_max { get; set; }
             public int action_treshold_count { get; set; }
             public int action_treshold_max { get; set; }
+            public bool auto_reset { get; set; }
             public string action_history { get; set; }
             public string script { get; set; }
             public string script_action { get; set; }
             public int cpu_usage { get; set; }
+            public string process_name { get; set; }
             public int ram_usage { get; set; }
             public int disk_usage { get; set; }
             public int disk_minimum_capacity { get; set; }
