@@ -68,10 +68,11 @@ namespace NetLock_Server.Agent.Windows
             public int utilization_category { get; set; }
             public int notification_treshold_count { get; set; }
             public int notification_treshold_max { get; set; }
+            public string notification_history { get; set; }
             public int action_treshold_count { get; set; }
             public int action_treshold_max { get; set; }
-            public bool auto_reset { get; set; }
             public string action_history { get; set; }
+            public bool auto_reset { get; set; }
             public string script { get; set; }
             public string script_action { get; set; }
             public int cpu_usage { get; set; }
@@ -84,7 +85,6 @@ namespace NetLock_Server.Agent.Windows
             public bool disk_include_network_disks { get; set; }
             public bool disk_include_removable_disks { get; set; }
             public string eventlog { get; set; }
-            public string eventlog_category { get; set; }
             public string eventlog_event_id { get; set; }
             public string expected_result { get; set; }
 
