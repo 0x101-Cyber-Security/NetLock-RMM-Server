@@ -33,4 +33,4 @@ C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-R
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock RMM Server.genruntimeconfig.cache
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\ref\NetLock RMM Server.dll
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\Newtonsoft.Json.dll
-C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock .0E714E9E.Up2Date
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\Projekte\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock RMM Server.csproj.CopyComplete

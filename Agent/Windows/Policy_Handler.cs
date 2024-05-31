@@ -94,7 +94,9 @@ namespace NetLock_Server.Agent.Windows
             public int service_action { get; set; }
 
             //ping sensor
-            public string ping_hostname { get; set; }
+            public string ping_address { get; set; }
+            public int ping_timeout { get; set; }
+            public int ping_condition { get; set; }
 
             //time schedule
             public int time_scheduler_type { get; set; }
