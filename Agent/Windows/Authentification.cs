@@ -3,6 +3,8 @@ using System.Data.Common;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Concurrent;
+using NetLock_Server.SignalR;
 
 namespace NetLock_Server.Agent.Windows
 {
@@ -37,6 +39,11 @@ namespace NetLock_Server.Agent.Windows
             public Device_Identity_Entity? device_identity { get; set; }
         }
 
+        public class ApiKeyMiddleware
+        {
+            
+            
+        }
 
         public static async Task<string> Verify_Device(string json, string ip_address_external)
         {
@@ -52,7 +59,7 @@ namespace NetLock_Server.Agent.Windows
 
                 await conn.OpenAsync();
 
-                string reader_query = $"SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+                string reader_query = "SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
                 Logging.Handler.Debug("Modules.Authentification.Verify_Device", "MySQL_Query", reader_query);
 
                 MySqlCommand command = new MySqlCommand(reader_query, conn);
@@ -179,7 +186,7 @@ namespace NetLock_Server.Agent.Windows
 
                     cmd.ExecuteNonQuery();
 
-                    authentification_result = "not_authorized";
+                    authentification_result = "unauthorized";
                     device_exists = false;
                 }
 
@@ -262,6 +269,122 @@ namespace NetLock_Server.Agent.Windows
             finally
             {
                 conn.Close();
+            }
+        }
+
+        public class JsonAuthMiddleware
+        {
+            private readonly RequestDelegate _next;
+            private readonly ConcurrentDictionary<string, string> _clientConnections;
+
+
+            public JsonAuthMiddleware(RequestDelegate next)
+            {
+                _next = next;
+                _clientConnections = ConnectionManager.Instance.ClientConnections;
+            }
+
+            public async Task InvokeAsync(HttpContext context)
+            {
+                MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+
+                try
+                {
+                    if (!context.Request.Headers.TryGetValue("Device-Identity", out var deviceIdentityEncoded))
+                    {
+                        context.Response.StatusCode = 401; // Unauthorized
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityJson", "Device identity was not provided.");
+                        await context.Response.WriteAsync("Device identity was not provided.");
+                        return;
+                    }
+
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityEncoded", deviceIdentityEncoded);
+
+                    // Decodieren Sie das empfangene JSON
+                    var deviceIdentityJson = Uri.UnescapeDataString(deviceIdentityEncoded);
+
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityJson", deviceIdentityJson);
+
+                    Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(deviceIdentityJson);
+
+                    Device_Identity_Entity device_identity = rootData.device_identity;
+
+                    await conn.OpenAsync();
+
+                    string reader_query = "SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+                    Logging.Handler.Debug("Modules.Authentification.InvokeAsync", "MySQL_Query", reader_query);
+
+                    MySqlCommand command = new MySqlCommand(reader_query, conn);
+                    command.Parameters.AddWithValue("@device_name", device_identity.device_name);
+                    command.Parameters.AddWithValue("@location_name", device_identity.location_name);
+                    command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
+
+                    DbDataReader reader = await command.ExecuteReaderAsync();
+
+                    string authentification_result = String.Empty;
+
+                    if (reader.HasRows)
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "1") //access key & hwid correct
+                            {
+                                if (reader["synced"].ToString() == "1")
+                                {
+                                    authentification_result = "synced";
+                                }
+                                else if (reader["synced"].ToString() == "0")
+                                {
+                                    authentification_result = "not_synced";
+                                }
+                            }
+                            else if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "0") //access key & hwid correct, but not authorized
+                            {
+                                authentification_result = "unauthorized";
+                            }
+                            else if (device_identity.access_key != reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString()) //access key is not correct, but hwid is. Deauthorize the device, set new access key & set not synced
+                            {
+                                authentification_result = "authorized";
+                            }
+                            else // data not correct. Refuse device
+                            {
+                                authentification_result = "invalid";
+                            }
+                        }
+
+                        await reader.CloseAsync();
+                    }
+                    else //device not existing, create
+                        authentification_result = "unauthorized";
+
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "authentification_result", authentification_result);
+
+                    // Device is not authorized or invalid
+                    if (authentification_result == "unauthorized" || authentification_result == "invalid")
+                    {
+                        var clientId = context.Connection.Id;
+
+                        if (_clientConnections.ContainsKey(clientId))
+                            _clientConnections.TryRemove(clientId, out _);
+
+                        context.Response.StatusCode = 401; // Unauthorized
+                        await context.Response.WriteAsync("Unauthorized device.");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Handler.Error("NetLock_Server.Modules.Authentification.InvokeAsync", "General error", ex.ToString());
+                    context.Response.StatusCode = 401; // Unauthorized
+                    await context.Response.WriteAsync("invalid");
+                    return;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+
+                await _next(context);
             }
         }
     }

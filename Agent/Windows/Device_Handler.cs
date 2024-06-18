@@ -245,7 +245,6 @@ namespace NetLock_Server.Agent.Windows
                 //Insert device_information_general_history
 
                 //Get current policy from the device, since its not in the devices identity
-                string device_information_general_history_policy_name = String.Empty;
                 string device_information_general_history_ip_address_internal = String.Empty;
                 string device_information_general_history_ip_address_external = String.Empty;
                 string device_information_general_history_network_adapters = String.Empty;
@@ -262,7 +261,6 @@ namespace NetLock_Server.Agent.Windows
                     {
                         while (await device_information_general_history_reader.ReadAsync())
                         {
-                            device_information_general_history_policy_name = device_information_general_history_reader["policy_name"].ToString() ?? String.Empty;
                             device_information_general_history_ip_address_internal = device_information_general_history_reader["ip_address_internal"].ToString() ?? String.Empty;
                             device_information_general_history_ip_address_external = device_information_general_history_reader["ip_address_external"].ToString() ?? String.Empty;
                             device_information_general_history_network_adapters = device_information_general_history_reader["network_adapters"].ToString() ?? String.Empty;
@@ -276,14 +274,13 @@ namespace NetLock_Server.Agent.Windows
                     Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
                 }
 
-                string device_information_general_history_execute_query = "INSERT INTO `device_information_general_history` (`tenant_name`, `location_name`, `device_name`, `date`, `policy_name`, `ip_address_internal`, `ip_address_external`, `network_adapters`, `json`) VALUES (@tenant_name, @location_name, @device_name, @date, @policy_name, @ip_address_internal, @ip_address_external, @network_adapters, @json);";
+                string device_information_general_history_execute_query = "INSERT INTO `device_information_general_history` (`tenant_name`, `location_name`, `device_name`, `date`, `ip_address_internal`, `ip_address_external`, `network_adapters`, `json`) VALUES (@tenant_name, @location_name, @device_name, @date, @ip_address_internal, @ip_address_external, @network_adapters, @json);";
 
                 MySqlCommand device_information_general_history_cmd = new MySqlCommand(device_information_general_history_execute_query, conn);
                 device_information_general_history_cmd.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@location_name", device_identity.location_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@device_name", device_identity.device_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                device_information_general_history_cmd.Parameters.AddWithValue("@policy_name", device_information_general_history_policy_name);
                 device_information_general_history_cmd.Parameters.AddWithValue("@ip_address_internal", device_information_general_history_ip_address_internal);
                 device_information_general_history_cmd.Parameters.AddWithValue("@ip_address_external", device_information_general_history_ip_address_external);
                 device_information_general_history_cmd.Parameters.AddWithValue("@network_adapters", device_information_general_history_network_adapters);

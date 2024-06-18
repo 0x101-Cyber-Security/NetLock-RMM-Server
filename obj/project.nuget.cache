@@ -1,19 +1,26 @@
 {
   "version": 2,
-  "dgSpecHash": "2izScwrRY3HHi/gx7CQC2S/lLvJgzZdr4X9Y7sFeegOVZdMHE+3pkrCSPykLShivT0XvhDlT1YLgSlBU6BSN5g==",
+  "dgSpecHash": "NaAzLQw5YG60BRFhUzN2oVpvj3duAl795lkIP2zdM+PrmkhoRis+gQ8EZTAHP0Twx5zR39BdnWIivWJNkaeehg==",
   "success": true,
   "projectFilePath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\Projekte\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.6\\microsoft.aspnetcore.connections.abstractions.8.0.6.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.0\\microsoft.aspnetcore.openapi.8.0.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.signalr.common\\8.0.6\\microsoft.aspnetcore.signalr.common.8.0.6.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.features\\8.0.6\\microsoft.extensions.features.8.0.6.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.openapi\\1.4.3\\microsoft.openapi.1.4.3.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\mysqlconnector\\2.3.6\\mysqlconnector.2.3.6.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.5.0\\swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.5.0\\swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512"
+    "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512"
   ],
   "logs": []
 }
