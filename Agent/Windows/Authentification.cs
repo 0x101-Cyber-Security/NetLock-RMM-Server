@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Concurrent;
 using NetLock_Server.SignalR;
+using Microsoft.Extensions.Primitives;
 
 namespace NetLock_Server.Agent.Windows
 {
     public class Authentification
     {
-        public class Device_Identity_Entity
+        public class Device_Identity
         {
             public string? agent_version { get; set; }
             public string? device_name { get; set; }
@@ -33,16 +34,19 @@ namespace NetLock_Server.Agent.Windows
             public string? tpm { get; set; }
             // public string? environment_variables { get; set; }
         }
+        public class Admin_Identity
+        {
+            public string? api_key { get; set; }
+            public string? admin_username { get; set; }
+            public string? admin_password { get; set; } // hashed
+            public string? session_id { get; set; }
+
+        }
 
         public class Root_Entity
         {
-            public Device_Identity_Entity? device_identity { get; set; }
-        }
-
-        public class ApiKeyMiddleware
-        {
-            
-            
+            public Device_Identity? device_identity { get; set; }
+            public Admin_Identity? admin_identity { get; set; }
         }
 
         public static async Task<string> Verify_Device(string json, string ip_address_external)
@@ -55,7 +59,7 @@ namespace NetLock_Server.Agent.Windows
 
                 Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(json);
 
-                Device_Identity_Entity device_identity = rootData.device_identity;
+                Device_Identity device_identity = rootData.device_identity;
 
                 await conn.OpenAsync();
 
@@ -87,7 +91,7 @@ namespace NetLock_Server.Agent.Windows
                             {
                                 authentification_result = "not_synced";
                             }
-                            
+
                             authorized = "1";
                         }
                         else if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "0") //access key & hwid correct, but not authorized
@@ -255,7 +259,7 @@ namespace NetLock_Server.Agent.Windows
                     cmd.Parameters.AddWithValue("@tpm", device_identity.tpm);
                     cmd.Parameters.AddWithValue("@environment_variables", "");
                     cmd.Parameters.AddWithValue("@synced", synced);
-                    
+
                     cmd.ExecuteNonQuery();
                 }
 
@@ -290,78 +294,141 @@ namespace NetLock_Server.Agent.Windows
 
                 try
                 {
-                    if (!context.Request.Headers.TryGetValue("Device-Identity", out var deviceIdentityEncoded))
+                    // Attempt to retrieve the header values
+                    bool hasDeviceIdentity = context.Request.Headers.TryGetValue("Device-Identity", out StringValues deviceIdentityEncoded);
+                    bool hasAdminIdentity = context.Request.Headers.TryGetValue("Admin-Identity", out StringValues adminIdentityEncoded);
+
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "hasDeviceIdentity", hasDeviceIdentity.ToString());
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "hasAdminIdentity", hasAdminIdentity.ToString());
+
+                    if (!hasDeviceIdentity && !hasAdminIdentity)
                     {
                         context.Response.StatusCode = 401; // Unauthorized
-                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityJson", "Device identity was not provided.");
-                        await context.Response.WriteAsync("Device identity was not provided.");
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "identityJson", "Device (" + hasDeviceIdentity + ") or admin (" + hasAdminIdentity + ") identity was not provided.");
+                        await context.Response.WriteAsync("Device or admin identity was not provided.");
                         return;
                     }
 
-                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityEncoded", deviceIdentityEncoded);
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityEncoded", deviceIdentityEncoded.ToString());
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "adminIdentityEncoded", adminIdentityEncoded.ToString());
 
-                    // Decodieren Sie das empfangene JSON
-                    var deviceIdentityJson = Uri.UnescapeDataString(deviceIdentityEncoded);
+                    // Decode the received JSON
+                    string deviceIdentityJson = String.Empty;
+                    string adminIdentityJson = String.Empty;
+
+                    if (hasDeviceIdentity)
+                        deviceIdentityJson = Uri.UnescapeDataString(deviceIdentityEncoded);
+                    else if (hasAdminIdentity)
+                        adminIdentityJson = Uri.UnescapeDataString(adminIdentityEncoded);
 
                     Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "deviceIdentityJson", deviceIdentityJson);
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "adminIdentityJson", adminIdentityJson);
 
-                    Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(deviceIdentityJson);
+                    // Deserialize the JSON
+                    Root_Entity rootData = new Root_Entity();
 
-                    Device_Identity_Entity device_identity = rootData.device_identity;
+                    if (hasDeviceIdentity)
+                        rootData = JsonSerializer.Deserialize<Root_Entity>(deviceIdentityJson);
+                    else if (hasAdminIdentity)
+                        rootData = JsonSerializer.Deserialize<Root_Entity>(adminIdentityJson);
 
-                    await conn.OpenAsync();
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "rootData", "extracted");
 
-                    string reader_query = "SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
-                    Logging.Handler.Debug("Modules.Authentification.InvokeAsync", "MySQL_Query", reader_query);
-
-                    MySqlCommand command = new MySqlCommand(reader_query, conn);
-                    command.Parameters.AddWithValue("@device_name", device_identity.device_name);
-                    command.Parameters.AddWithValue("@location_name", device_identity.location_name);
-                    command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
-
-                    DbDataReader reader = await command.ExecuteReaderAsync();
-
+                    Device_Identity device_identity = new Device_Identity();
+                    Admin_Identity admin_identity = new Admin_Identity();
+    
                     string authentification_result = String.Empty;
 
-                    if (reader.HasRows)
+                    if (hasDeviceIdentity)
                     {
-                        while (await reader.ReadAsync())
-                        {
-                            if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "1") //access key & hwid correct
-                            {
-                                if (reader["synced"].ToString() == "1")
-                                {
-                                    authentification_result = "synced";
-                                }
-                                else if (reader["synced"].ToString() == "0")
-                                {
-                                    authentification_result = "not_synced";
-                                }
-                            }
-                            else if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "0") //access key & hwid correct, but not authorized
-                            {
-                                authentification_result = "unauthorized";
-                            }
-                            else if (device_identity.access_key != reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString()) //access key is not correct, but hwid is. Deauthorize the device, set new access key & set not synced
-                            {
-                                authentification_result = "authorized";
-                            }
-                            else // data not correct. Refuse device
-                            {
-                                authentification_result = "invalid";
-                            }
-                        }
+                        device_identity = rootData.device_identity;
+                        // Verarbeiten Sie die Device-Identity
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "device_identity", $"Device identity: {device_identity.device_name}");
 
-                        await reader.CloseAsync();
+                        await conn.OpenAsync();
+
+                        string reader_query = "SELECT * FROM `devices` WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+                        Logging.Handler.Debug("Modules.Authentification.InvokeAsync", "MySQL_Query", reader_query);
+
+                        MySqlCommand command = new MySqlCommand(reader_query, conn);
+                        command.Parameters.AddWithValue("@device_name", device_identity.device_name);
+                        command.Parameters.AddWithValue("@location_name", device_identity.location_name);
+                        command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
+
+                        DbDataReader reader = await command.ExecuteReaderAsync();
+
+                        if (reader.HasRows)
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "1") //access key & hwid correct
+                                {
+                                    if (reader["synced"].ToString() == "1")
+                                    {
+                                        authentification_result = "synced";
+                                    }
+                                    else if (reader["synced"].ToString() == "0")
+                                    {
+                                        authentification_result = "not_synced";
+                                    }
+                                }
+                                else if (device_identity.access_key == reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString() && reader["authorized"].ToString() == "0") //access key & hwid correct, but not authorized
+                                {
+                                    authentification_result = "unauthorized";
+                                }
+                                else if (device_identity.access_key != reader["access_key"].ToString() && device_identity.hwid == reader["hwid"].ToString()) //access key is not correct, but hwid is. Deauthorize the device, set new access key & set not synced
+                                {
+                                    authentification_result = "authorized";
+                                }
+                                else // data not correct. Refuse device
+                                {
+                                    authentification_result = "invalid";
+                                }
+                            }
+
+                            await reader.CloseAsync();
+                        }
+                        else //device not existing, create
+                            authentification_result = "unauthorized";
                     }
-                    else //device not existing, create
-                        authentification_result = "unauthorized";
+                    else if (hasAdminIdentity)
+                    {
+                        admin_identity = rootData.admin_identity;
+
+                        // Verarbeiten Sie die Admin-Identity
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.admin_username}");
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.admin_password}");
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.api_key}");
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.session_id}");
+
+                        if (admin_identity.api_key == "1234567890")
+                        {
+                            authentification_result = "authorized";
+                        }
+                        else
+                        {
+                            authentification_result = "unauthorized";
+                        }
+                    }
+                    else
+                    {   
+                        context.Response.StatusCode = 400; // Bad Request
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "Invalid JSON", "Neither device identity nor admin identity provided.");
+                        await context.Response.WriteAsync("Invalid JSON. Neither device identity nor admin identity provided.");
+                        return;
+                    }
+
+                    // hier weiter machen. Test App coden, die sich mit dem Server verbindet und mit Admin Identity authentifiziert und dann mit clients kommuniziert
+
+
 
                     Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "authentification_result", authentification_result);
 
-                    // Device is not authorized or invalid
+                    // Device is not authorized or invalid, remove from client connections
                     if (authentification_result == "unauthorized" || authentification_result == "invalid")
                     {
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "authentification_result", "Unauthorized device.");
+
                         var clientId = context.Connection.Id;
 
                         if (_clientConnections.ContainsKey(clientId))

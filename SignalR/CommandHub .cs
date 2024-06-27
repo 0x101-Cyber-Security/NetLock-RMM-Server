@@ -19,21 +19,39 @@ namespace NetLock_Server.SignalR
                 Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Client connected");
 
                 var clientId = Context.ConnectionId;
+
+                // Extract the device identity from the request headers
                 var deviceIdentityEncoded = Context.GetHttpContext().Request.Headers["Device-Identity"];
+                var adminIdentityEncoded = Context.GetHttpContext().Request.Headers["Admin-Identity"];
 
-                // Decode the received JSON
-                var deviceIdentityJson = Uri.UnescapeDataString(deviceIdentityEncoded);
+                if (string.IsNullOrEmpty(deviceIdentityEncoded) && string.IsNullOrEmpty(adminIdentityEncoded))
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Neither Device-Identity nor Admin-Identity was provided.");
+                    Context.Abort();
+                    return Task.CompletedTask;
+                }
 
-                Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Device identity: " + deviceIdentityJson);
+                string decodedIdentityJson = string.Empty;
+
+                if (!string.IsNullOrEmpty(deviceIdentityEncoded))
+                {
+                    decodedIdentityJson = Uri.UnescapeDataString(deviceIdentityEncoded);
+                    Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Device identity: " + decodedIdentityJson);
+                }
+                else if (!string.IsNullOrEmpty(adminIdentityEncoded))
+                {
+                    decodedIdentityJson = Uri.UnescapeDataString(adminIdentityEncoded);
+                    Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Admin identity: " + decodedIdentityJson);
+                }
 
                 // Save clientId and any other relevant data in your data structure
-                _clientConnections.TryAdd(clientId, deviceIdentityJson);
+                _clientConnections.TryAdd(clientId, decodedIdentityJson);    
             }
             catch (Exception ex)
             {
                 Logging.Handler.Error("SignalR CommandHub", "OnConnectedAsync", ex.ToString());
             }
-            
+
             return base.OnConnectedAsync();
         }
 
@@ -63,29 +81,103 @@ namespace NetLock_Server.SignalR
             await Clients.All.SendAsync("ReceiveCommand", command);
         }*/
 
-        public async Task SendCommandToClient(string device_name, string location_name, string tenant_name, string command)
+        public async Task SendMessageToClient(string device_name, string location_name, string tenant_name, string command)
         {
             try
             {
-                Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client: {device_name}, {location_name}, {tenant_name}: {command}");
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClient", $"Command sent to client: {device_name}, {location_name}, {tenant_name}: {command}");
 
                 var clientId = _clientConnections.FirstOrDefault(x => x.Value.Contains(device_name) && x.Value.Contains(location_name) && x.Value.Contains(tenant_name)).Key;
-                Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Client ID: {clientId}");
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClient", $"Client ID: {clientId}");
 
-                Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClient", $"Command sent to client {clientId}: {command}");
 
-                await Clients.Client(clientId).SendAsync("ReceiveCommand", command);
+                await Clients.Client(clientId).SendAsync("ReceiveMessage", command);
 
-                Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClient", $"Command sent to client {clientId}: {command}");
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("SignalR CommandHub", "SendCommandToClient", ex.ToString());
+                Logging.Handler.Error("SignalR CommandHub", "SendMessageToClient", ex.ToString());
             }
         }
+
+        // hier weiter 28.06.2024 00:45
+
+        public async Task<string> SendMessageToClientAndWaitForResponse(string device_name, string location_name, string tenant_name, string command)
+        {
+            try
+            {
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Command sent to client: {device_name}, {location_name}, {tenant_name}: {command}");
+
+                var clientId = _clientConnections.FirstOrDefault(x => x.Value.Contains(device_name) && x.Value.Contains(location_name) && x.Value.Contains(tenant_name)).Key;
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Client ID: {clientId}");
+
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Command sent to client {clientId}: {command}");
+
+                // Send command to client and wait for response
+                var response = await Clients.Client(clientId).InvokeAsync<string>("ReceiveMessageAndWaitForResponse", command, CancellationToken.None);
+
+                Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Response received from client {clientId}: {response}");
+
+                // Process the response here (e.g., update UI, log, etc.)
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", ex.ToString());
+                return null;
+            }
+        }
+
+
+        // Method to receive commands from the webconsole
+        public async Task MessageReceivedFromWebconsole(string message)
+        {
+            try
+            {
+                Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", $"Received message from client: {message}");
+
+                // Process the message here
+                // For example, you can log the message or perform some action based on the content
+
+                // Optionally, you can send a response back to the client
+                await Clients.Caller.SendAsync("ReceiveCommandResponse", "Message received and processed.");
+
+                // Send the command to the device
+                await SendMessageToClient("DeviceName", "LocationName", "TenantName", message);
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("SignalR CommandHub", "MessageReceivedFromWebconsole", ex.ToString());
+            }
+        }
+
+        // Method to receive commands from the devices
+        public async Task MessageReceivedFromDevice(string message)
+        {
+            try
+            {
+                Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromDevice", $"Received message from client: {message}");
+
+                // Process the message here
+                // For example, you can log the message or perform some action based on the content
+
+                // Optionally, you can send a response back to the client
+                await Clients.Caller.SendAsync("ReceiveCommandResponse", "Message received and processed.");
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("SignalR CommandHub", "MessageReceivedFromDevice", ex.ToString());
+            }
+        }
+
+
     }
 
-    public class ApiKeyMiddleware
+
+    /*public class ApiKeyMiddleware
     {
         private readonly RequestDelegate _next;
         private const string API_KEY_HEADER_NAME = "X-API-KEY";
@@ -116,5 +208,6 @@ namespace NetLock_Server.SignalR
 
             await _next(context);
         }
-    }
+    }*/
 }
+

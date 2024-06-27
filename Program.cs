@@ -325,7 +325,7 @@ app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubCon
 
             Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
 
-            await hubContext.Clients.Client(clientId).SendAsync("ReceiveCommand", command);
+            await hubContext.Clients.Client(clientId).SendAsync("ReceiveMessage", command);
 
             Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
         }
