@@ -34,6 +34,7 @@ namespace NetLock_Server.Agent.Windows
             public string? tpm { get; set; }
             // public string? environment_variables { get; set; }
         }
+
         public class Admin_Identity
         {
             public string? api_key { get; set; }

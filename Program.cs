@@ -20,7 +20,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<CommandHub>();
-
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 102400000; // Increase maximum message size to 100 MB
+});
 
 var app = builder.Build();
 
