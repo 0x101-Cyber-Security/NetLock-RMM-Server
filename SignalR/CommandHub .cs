@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using MySqlConnector;
+using System;
 using System.Collections.Concurrent;
+using System.Data;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 
@@ -44,6 +48,7 @@ namespace NetLock_Server.SignalR
 
         public class Target_Device
         {
+            public string device_id { get; set; }
             public string device_name { get; set; }
             public string location_name { get; set; } // hashed
             public string tenant_name { get; set; }
@@ -66,6 +71,7 @@ namespace NetLock_Server.SignalR
 
         private readonly ConcurrentDictionary<string, string> _clientConnections;
         private readonly ConcurrentDictionary<string, string> _adminCommands = new ConcurrentDictionary<string, string>();
+
         private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _responseTasks;
 
 
@@ -190,9 +196,9 @@ namespace NetLock_Server.SignalR
                     Logging.Handler.Debug("SignalR CommandHub", "Get_Admin_ClientId_By_ResponseId", $"Connected admin clients: {client.Key}, {client.Value}");
                 }
 
-                if (_adminCommands.TryGetValue(responseId, out string clientId))
+                if (_adminCommands.TryGetValue(responseId, out string admin_identity_info_json))
                 {
-                    return clientId;
+                    return admin_identity_info_json;
                 }
 
                 return null; // If the responseId is not found
@@ -221,7 +227,7 @@ namespace NetLock_Server.SignalR
             }
         }
 
-        public async Task SendMessageToClientAndWaitForResponse(string admin_client_id, string client_id, string command_json)
+        public async Task SendMessageToClientAndWaitForResponse(string admin_identity_info_json, string client_id, string command_json)
         {
             try
             {
@@ -230,8 +236,8 @@ namespace NetLock_Server.SignalR
                 // Generate a unique responseId for the command
                 var responseId = Guid.NewGuid().ToString();
 
-                // Save responseId & admin_client_id
-                _adminCommands.TryAdd(responseId, admin_client_id);
+                // Save responseId & admin_identity_info_json
+                _adminCommands.TryAdd(responseId, admin_identity_info_json);
 
                 // Add the responseId to the command JSON
                 command_json = AddResponseIdToJson(command_json, responseId);
@@ -257,10 +263,71 @@ namespace NetLock_Server.SignalR
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Received response from client. ResponseId: {responseId} response: {response}");
                 
                 // Get the admin client ID from the dictionary
-                string admin_client_id = await Get_Admin_ClientId_By_ResponseId(responseId);
+                string admin_identity_info_json = await Get_Admin_ClientId_By_ResponseId(responseId);
 
-                Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Admin client ID: {admin_client_id}");
+                string admin_client_id = String.Empty;
+                string admin_username = String.Empty;
+                string device_id = String.Empty;
+                string command = String.Empty;
+                int type = 0;
 
+                // Deserialisierung des gesamten JSON-Strings
+                using (JsonDocument document = JsonDocument.Parse(admin_identity_info_json))
+                {
+                    // Get the admin client ID from the JSON
+                    JsonElement admin_client_id_element = document.RootElement.GetProperty("admin_client_id");
+                    admin_client_id = admin_client_id_element.ToString();
+
+                    // Get the admin username
+                    JsonElement admin_username_element = document.RootElement.GetProperty("admin_username");
+                    admin_username = admin_username_element.ToString();
+
+                    // Get the device ID from the JSON
+                    JsonElement device_id_element = document.RootElement.GetProperty("device_id");
+                    device_id = device_id_element.ToString();
+
+                    // Get the command from the JSON
+                    JsonElement command_element = document.RootElement.GetProperty("command");
+                    command = command_element.ToString();
+
+                    // Get the command type from the JSON
+                    JsonElement type_element = document.RootElement.GetProperty("type");
+                    type = type_element.GetInt32();
+                }
+
+                Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Admin client ID: {admin_client_id} type: {type}");
+
+                // insert result into history table
+                if (type == 0)
+                {
+                    MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+
+                    try
+                    {
+                        await conn.OpenAsync();
+
+                        string execute_query = "INSERT INTO `device_information_remote_shell_history` (`device_id`, `date`, `author`, `command`, `result`) VALUES (@device_id, @date, @author, @command, @result);";
+
+                        MySqlCommand cmd = new MySqlCommand(execute_query, conn);
+                        cmd.Parameters.AddWithValue("@device_id", device_id);
+                        cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                        cmd.Parameters.AddWithValue("@author", admin_username);
+                        cmd.Parameters.AddWithValue("@command", command);
+                        cmd.Parameters.AddWithValue("@result", response);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.Handler.Error("SignalR CommandHub", "General error", ex.ToString());
+                    }
+                    finally
+                    {
+                        await conn.CloseAsync();
+                    }
+                }
+
+                // Check if the admin client ID is empty or null and return if it is
                 if (string.IsNullOrEmpty(admin_client_id))
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", "Admin client ID not found.");
@@ -268,16 +335,20 @@ namespace NetLock_Server.SignalR
                 }
 
                 // Send the response back to the admin client
-                await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
+                // type == 0 (remote shell)
+                if (type == 0)
+                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
-
-                // Remove the responseId from the dictionary
-                _adminCommands.TryRemove(responseId, out _);
             }
             catch (Exception ex)
             {
                 Logging.Handler.Error("SignalR CommandHub", "ReceiveClientResponse", ex.ToString());
+            }
+            finally
+            {
+                // Remove the responseId from the dictionary
+                _adminCommands.TryRemove(responseId, out _);
             }
         }
 
@@ -337,10 +408,24 @@ namespace NetLock_Server.SignalR
                 // Get admins client id
                 var admin_client_id = Context.ConnectionId;
 
+                //  Create the JSON object
+                var jsonObject = new
+                {
+                    admin_client_id = admin_client_id, // admin client id
+                    admin_username = admin_identity.admin_username, // admin_username
+                    device_id = target_device.device_id, // device_id
+                    command = command.powershell_code, // device_id
+                    type = command.type, // represents the command type. Needed for the response to know how to handle the response
+                };
+
+                // Convert the object into a JSON string
+                string admin_identity_info_json = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
+                Logging.Handler.Debug("SignalR CommandHub", "admin_client_json", admin_identity_info_json);
+
                 // Send the command to the client and wait for the response
                 if (command.wait_response)
                 {
-                    await SendMessageToClientAndWaitForResponse(admin_client_id, client_id, commandJson);
+                    await SendMessageToClientAndWaitForResponse(admin_identity_info_json, client_id, commandJson);
                     
                     Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", $"Triggered command with waiting for response.");
                 }
