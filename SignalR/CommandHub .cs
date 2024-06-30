@@ -268,7 +268,7 @@ namespace NetLock_Server.SignalR
                 }
 
                 // Send the response back to the admin client
-                await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponse", response);
+                await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
 
@@ -319,10 +319,17 @@ namespace NetLock_Server.SignalR
 
                 Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", $"Client ID: {client_id}");
 
-                if (String.IsNullOrEmpty(client_id))
+                if (String.IsNullOrEmpty(client_id) && command.type == 0) // if remote shell
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", "Client ID not found.");
-                    await Clients.Caller.SendAsync("ReceiveCommandResponse", "Device not connected.");
+                    await Clients.Caller.SendAsync("ReceiveClientResponseRemoteShell", "Device not connected.");
+
+                    return;
+                }
+                else if (String.IsNullOrEmpty(client_id))
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", "Client ID not found.");
+                    await Clients.Caller.SendAsync("ReceiveClientResponse", "Device not connected.");
 
                     return;
                 }

@@ -37,11 +37,9 @@ namespace NetLock_Server.Agent.Windows
 
         public class Admin_Identity
         {
-            public string? api_key { get; set; }
             public string? admin_username { get; set; }
             public string? admin_password { get; set; } // hashed
-            public string? session_id { get; set; }
-
+            public string? session_guid { get; set; }
         }
 
         public class Root_Entity
@@ -399,12 +397,49 @@ namespace NetLock_Server.Agent.Windows
                         // Verarbeiten Sie die Admin-Identity
                         Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.admin_username}");
                         Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.admin_password}");
-                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.api_key}");
-                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.session_id}");
+                        Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "admin_identity", $"Admin identity: {admin_identity.session_guid}");
 
-                        if (admin_identity.api_key == "1234567890")
+                        bool isPasswordCorrect = false;
+
+                        string admin_password_decrypted = Encryption.String_Encryption.Decrypt(admin_identity.admin_password, Application_Settings.Local_Encryption_Key);
+                        string password_db = String.Empty;
+                        string session_guid_db = String.Empty;
+
+                        await conn.OpenAsync();
+
+                        string reader_query = "SELECT * FROM `accounts` WHERE username = @username;";
+                        Logging.Handler.Debug("Modules.Authentification.InvokeAsync", "MySQL_Query", reader_query);
+
+                        // Get the password and session_guid from the database
+                        MySqlCommand command = new MySqlCommand(reader_query, conn);
+                        command.Parameters.AddWithValue("@username", admin_identity.admin_username);
+                        
+                        DbDataReader reader = await command.ExecuteReaderAsync();
+
+                        if (reader.HasRows)
                         {
-                            authentification_result = "authorized";
+                            while (await reader.ReadAsync())
+                            {
+                                password_db = reader["password"].ToString() ?? String.Empty;
+                                session_guid_db = reader["session_guid"].ToString() ?? String.Empty;
+                                isPasswordCorrect = BCrypt.Net.BCrypt.Verify(admin_password_decrypted, reader["password"].ToString());
+                            }
+
+                            await reader.CloseAsync();
+                        }
+
+                        // Check if the password is correct
+                        if (isPasswordCorrect)
+                        {
+                            // Check if the session_guid is correct
+                            if (session_guid_db == admin_identity.session_guid)
+                            {
+                                authentification_result = "authorized";
+                            }
+                            else
+                            {
+                                authentification_result = "unauthorized";
+                            }
                         }
                         else
                         {
@@ -418,10 +453,6 @@ namespace NetLock_Server.Agent.Windows
                         await context.Response.WriteAsync("Invalid JSON. Neither device identity nor admin identity provided.");
                         return;
                     }
-
-                    // hier weiter machen. Test App coden, die sich mit dem Server verbindet und mit Admin Identity authentifiziert und dann mit clients kommuniziert
-
-
 
                     Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "authentification_result", authentification_result);
 
@@ -443,8 +474,14 @@ namespace NetLock_Server.Agent.Windows
                 catch (Exception ex)
                 {
                     Logging.Handler.Error("NetLock_Server.Modules.Authentification.InvokeAsync", "General error", ex.ToString());
+
+                    var clientId = context.Connection.Id;
+
+                    if (_clientConnections.ContainsKey(clientId))
+                        _clientConnections.TryRemove(clientId, out _);
+
                     context.Response.StatusCode = 401; // Unauthorized
-                    await context.Response.WriteAsync("invalid");
+                    await context.Response.WriteAsync("Unauthorized device.");
                     return;
                 }
                 finally
@@ -452,6 +489,7 @@ namespace NetLock_Server.Agent.Windows
                     conn.Close();
                 }
 
+                // Call the next delegate/middleware in the pipeline
                 await _next(context);
             }
         }
