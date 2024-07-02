@@ -40,7 +40,7 @@ namespace NetLock_Server.SignalR
         public class Admin_Identity
         {
             public string admin_username { get; set; }
-            public string admin_password { get; set; } // hashed
+            public string admin_password { get; set; } // encrypted
             public string api_key { get; set; }
             public string session_id { get; set; }
 
@@ -50,7 +50,7 @@ namespace NetLock_Server.SignalR
         {
             public string device_id { get; set; }
             public string device_name { get; set; }
-            public string location_name { get; set; } // hashed
+            public string location_name { get; set; } 
             public string tenant_name { get; set; }
         }
 
@@ -58,9 +58,12 @@ namespace NetLock_Server.SignalR
         {
             public int type { get; set; }
             public bool wait_response { get; set; }
-            public string powershell_code { get; set; } // hashed
+            public string powershell_code { get; set; } 
+            public int file_browser_command { get; set; } 
+            public string file_browser_path { get; set; } 
+            public string file_browser_file_path { get; set; } 
         }
-
+         
         public class Root_Entity
         {
             public Device_Identity? device_identity { get; set; }
@@ -270,6 +273,7 @@ namespace NetLock_Server.SignalR
                 string device_id = String.Empty;
                 string command = String.Empty;
                 int type = 0;
+                int file_browser_command = 0;
 
                 // Deserialisierung des gesamten JSON-Strings
                 using (JsonDocument document = JsonDocument.Parse(admin_identity_info_json))
@@ -293,12 +297,16 @@ namespace NetLock_Server.SignalR
                     // Get the command type from the JSON
                     JsonElement type_element = document.RootElement.GetProperty("type");
                     type = type_element.GetInt32();
+
+                    // Get the file browser command from the JSON
+                    JsonElement file_browser_command_element = document.RootElement.GetProperty("file_browser_command");
+                    file_browser_command = file_browser_command_element.GetInt32();
                 }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Admin client ID: {admin_client_id} type: {type}");
 
                 // insert result into history table
-                if (type == 0)
+                if (type == 0) // remote shell
                 {
                     MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
 
@@ -335,10 +343,17 @@ namespace NetLock_Server.SignalR
                 }
 
                 // Send the response back to the admin client
-                // type == 0 (remote shell)
-                if (type == 0)
+                // 0 = remote shell, 1 = file browser
+                if (type == 0) // remote shell
                     await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
-
+                else if (type == 1) // file browser
+                {
+                    if (file_browser_command == 0) // drives
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDrives", response);
+                    else if (file_browser_command == 1) // index
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserIndex", response);
+                }
+                
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
             }
             catch (Exception ex)
@@ -416,6 +431,7 @@ namespace NetLock_Server.SignalR
                     device_id = target_device.device_id, // device_id
                     command = command.powershell_code, // device_id
                     type = command.type, // represents the command type. Needed for the response to know how to handle the response
+                    file_browser_command = command.file_browser_command, // represents the file browser command type. Needed for the response to know how to handle the response
                 };
 
                 // Convert the object into a JSON string
