@@ -61,7 +61,8 @@ namespace NetLock_Server.SignalR
             public string powershell_code { get; set; } 
             public int file_browser_command { get; set; } 
             public string file_browser_path { get; set; } 
-            public string file_browser_file_path { get; set; } 
+            public string file_browser_path_move { get; set; } 
+            public string file_browser_file_content { get; set; } 
         }
          
         public class Root_Entity
@@ -352,8 +353,33 @@ namespace NetLock_Server.SignalR
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDrives", response);
                     else if (file_browser_command == 1) // index
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserIndex", response);
+                    else if (file_browser_command == 2) // create dir
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserCreateDirectory", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateDirectory", response);
+                    }
+                    else if (file_browser_command == 3) // delete dir
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDeleteDirectory", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteDirectory", response);
+                    }
+                    else if (file_browser_command == 4) // move dir
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserMoveDirectory", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveDirectory", response);
+                    }
+                    else if (file_browser_command == 5) // rename dir
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameDirectory", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameDirectory", response);
+                    }
+                    else if (file_browser_command == 6) // create file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserCreateFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateFile", response);
+                    }
                 }
-                
+
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
             }
             catch (Exception ex)
