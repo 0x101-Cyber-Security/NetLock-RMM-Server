@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\application_paths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:application_paths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\application_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:application_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\signalr\\commandhub .cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:signalr\\commandhub .cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -11,16 +23,8 @@
       "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:signalr\\connectionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\agent\\windows\\authentification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:agent\\windows\\authentification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\application_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:application_settings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\agent\\windows\\policy_handler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -37,10 +41,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\agent\\windows\\device_handler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:agent\\windows\\device_handler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\application_paths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|solutionrelative:application_paths.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{65C2864C-5B94-4560-8B27-492BE00B1E7F}|NetLock RMM Server.csproj|c:\\users\\nicomak\\onedrive - 0x101 cyber security\\netlock root\\netlock-rmm-server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -74,7 +74,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 12,
           "Children": [
             {
               "$type": "Bookmark",
@@ -82,25 +82,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ConnectionManager.cs",
-              "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\ConnectionManager.cs",
-              "RelativeDocumentMoniker": "SignalR\\ConnectionManager.cs",
-              "ToolTip": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\ConnectionManager.cs",
-              "RelativeToolTip": "SignalR\\ConnectionManager.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-01T13:24:11.211Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "CommandHub .cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\CommandHub .cs",
               "RelativeDocumentMoniker": "SignalR\\CommandHub .cs",
               "ToolTip": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\CommandHub .cs",
               "RelativeToolTip": "SignalR\\CommandHub .cs",
-              "ViewState": "AQIAADAAAAAAAAAAAAAuwEAAAAAzAAAA",
+              "ViewState": "AQIAAGEBAAAAAAAAAAAqwGwBAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-28T19:37:29.553Z",
               "EditorCaption": ""
@@ -119,7 +107,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "Version_Handler.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Agent\\Windows\\Version_Handler.cs",
               "RelativeDocumentMoniker": "Agent\\Windows\\Version_Handler.cs",
@@ -143,7 +131,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Event_Handler.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Agent\\Windows\\Event_Handler.cs",
               "RelativeDocumentMoniker": "Agent\\Windows\\Event_Handler.cs",
@@ -167,7 +155,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "Device_Handler.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Agent\\Windows\\Device_Handler.cs",
               "RelativeDocumentMoniker": "Agent\\Windows\\Device_Handler.cs",
@@ -179,7 +167,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Authentification.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Agent\\Windows\\Authentification.cs",
               "RelativeDocumentMoniker": "Agent\\Windows\\Authentification.cs",
@@ -215,27 +203,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 1,
               "Title": "Application_Paths.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Application_Paths.cs",
               "RelativeDocumentMoniker": "Application_Paths.cs",
               "ToolTip": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Application_Paths.cs",
               "RelativeToolTip": "Application_Paths.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAQAAABiAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAuAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.939Z"
+              "WhenOpened": "2024-04-23T19:40:32.939Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAACoAAAAAAAAAAAAAADEAAAAaAAAA",
+              "ViewState": "AQIAAHYBAAAAAAAAAAAuwI4BAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.945Z"
+              "WhenOpened": "2024-04-23T19:40:32.945Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -251,7 +241,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "Application_Settings.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Application_Settings.cs",
               "RelativeDocumentMoniker": "Application_Settings.cs",
@@ -259,11 +249,24 @@
               "RelativeToolTip": "Application_Settings.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.943Z"
+              "WhenOpened": "2024-04-23T19:40:32.943Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
+              "Title": "ConnectionManager.cs",
+              "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\ConnectionManager.cs",
+              "RelativeDocumentMoniker": "SignalR\\ConnectionManager.cs",
+              "ToolTip": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\SignalR\\ConnectionManager.cs",
+              "RelativeToolTip": "SignalR\\ConnectionManager.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-07-01T13:24:11.211Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "Policy_Handler.cs",
               "DocumentMoniker": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\Agent\\Windows\\Policy_Handler.cs",
               "RelativeDocumentMoniker": "Agent\\Windows\\Policy_Handler.cs",

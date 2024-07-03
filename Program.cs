@@ -10,6 +10,7 @@ using System;
 using System.Text.Json;
 using static NetLock_Server.Agent.Windows.Authentification;
 using Microsoft.Extensions.DependencyInjection;
+using NetLock_Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 app.UseRouting();
@@ -211,8 +217,6 @@ app.MapPost("/Agent/Windows/Events", async context =>
     }
 }).WithName("Swagger3").WithOpenApi();
 
-
-
 //Get policy
 app.MapPost("/Agent/Windows/Policy", async context =>
 {
@@ -260,7 +264,7 @@ app.MapPost("/Agent/Windows/Policy", async context =>
     }
 }).WithName("Swagger4").WithOpenApi();
 
-//Check Version
+//Remote Command
 app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubContext<CommandHub> hubContext) =>
 {
     try
@@ -305,33 +309,6 @@ app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubCon
         {
             await hubContext.Clients.All.SendAsync("ReceiveCommand", "sync"); // Send command to all clients
         }
-        else if (command == "client_powershell")
-        {
-            //          CommandHub commandHub = new CommandHub();
-
-            //await hubContext.Clients.Client("DEV01").SendAsync("ReceiveCommand", "powershell_command");
-            //            await commandHub.SendCommandToClient("DEV01", "Köln1", "0x101 Cyber Security", "powershell_command");
-
-            // Create an instance of CommandHub
-            var commandHub = new CommandHub();
-
-            string device_name = "DEV01";
-            string location_name = "Köln1";
-            string tenant_name = "0x101 Cyber Security";
-
-            //await commandHub.SendCommandToClient(hubContext, deviceName, locationName, tenantName, command);
-            // hier weiter machen. SignalR Backend weiter überarbeiten, dann Funktion hinzufügen, das Client A (Webconsole) Befehle an Client B (Agent) senden kann und eine entsprechende Antwort erhält. Befehls Modell implementieren und dokumentieren
-            Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client: {device_name}, {location_name}, {tenant_name}: {command}");
-
-            var clientId = clients.FirstOrDefault(x => x.Value.Contains(device_name) && x.Value.Contains(location_name) && x.Value.Contains(tenant_name)).Key;
-            Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Client ID: {clientId}");
-
-            Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
-
-            await hubContext.Clients.Client(clientId).SendAsync("ReceiveMessage", command);
-
-            Logging.Handler.Debug("SignalR CommandHub", "SendCommandToClient", $"Command sent to client {clientId}: {command}");
-        }
 
         // Return the device status
         context.Response.StatusCode = 200;
@@ -344,6 +321,102 @@ app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubCon
         await context.Response.WriteAsync("Invalid request.");
     }
 }).WithName("Swagger5").WithOpenApi();
+
+// File upload
+app.MapPost("/public_upload", async context =>
+{
+    try
+    {
+        Logging.Handler.Debug("POST Request Mapping", "/public_upload", "Request received.");
+
+        // Add headers
+        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+        // Get the remote IP address from the X-Forwarded-For header
+        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Check if the request has a file
+        if (!context.Request.HasFormContentType)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Invalid request. No file uploaded.");
+            return;
+        }
+
+        var form = await context.Request.ReadFormAsync();
+        var file = form.Files.FirstOrDefault();
+        if (file == null || file.Length == 0)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Invalid request. No file uploaded.");
+            return;
+        }
+
+        // Set the upload path
+        var uploadPath = Application_Paths._public_uploads;
+
+        // Ensure the upload directory exists
+        if (!Directory.Exists(uploadPath))
+        {
+            Directory.CreateDirectory(uploadPath);
+        }
+
+        // Save the file
+        var filePath = Path.Combine(uploadPath, file.FileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        context.Response.StatusCode = 200;
+        await context.Response.WriteAsync("File uploaded successfully.");
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("POST Request Mapping", "/public_upload", ex.Message);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An error occurred while uploading the file.");
+    }
+}).WithName("public_upload").WithOpenApi();
+
+// File download
+app.MapGet("/public/downloads/{fileName}", async context =>
+{
+    try
+    {
+        Logging.Handler.Debug("GET Request Mapping", "/public_download", "Request received.");
+
+        var fileName = (string)context.Request.RouteValues["fileName"];
+        var downloadPath = Application_Paths._public_downloads + "\\" + fileName;
+
+        if (!File.Exists(downloadPath))
+        {
+            Logging.Handler.Error("GET Request Mapping", "/public_download", "File not found: " + downloadPath);
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync("File not found.");
+            return;
+        }
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(downloadPath, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        context.Response.ContentType = "application/octet-stream";
+        context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
+        await memory.CopyToAsync(context.Response.Body);
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("GET Request Mapping", "/public_download", ex.Message);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An error occurred while downloading the file.");
+    }
+}).WithName("public_download").WithOpenApi();
 
 
 //Start server

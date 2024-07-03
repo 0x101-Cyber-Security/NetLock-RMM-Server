@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NetLock RMM Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+21b223abdb8c86bf8bce30c59f620a5f575a9b97")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07349ae8742f99d26595a1aef0eb4c770b12bb4c")]
 [assembly: System.Reflection.AssemblyProductAttribute("NetLock RMM Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NetLock RMM Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

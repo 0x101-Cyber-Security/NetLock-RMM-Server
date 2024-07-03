@@ -378,6 +378,21 @@ namespace NetLock_Server.SignalR
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserCreateFile", $"Response sent to admin client {admin_client_id}: {response}");
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateFile", response);
                     }
+                    else if (file_browser_command == 7) // delete file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDeleteFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteFile", response);
+                    }
+                    else if (file_browser_command == 8) // move file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserMoveFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveFile", response);
+                    }
+                    else if (file_browser_command == 9) // rename file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameFile", response);
+                    }
                 }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
