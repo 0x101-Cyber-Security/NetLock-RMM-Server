@@ -16,8 +16,8 @@ namespace NetLock_Server.Agent.Windows
         {
             public string? agent_version { get; set; }
             public string? device_name { get; set; }
-            public string? location_name { get; set; }
-            public string? tenant_name { get; set; }
+            public string? location_guid { get; set; }
+            public string? tenant_guid { get; set; }
             public string? access_key { get; set; }
             public string? hwid { get; set; }
             public string? ip_address_internal { get; set; }
@@ -158,9 +158,16 @@ namespace NetLock_Server.Agent.Windows
                 Root_Entity rootData = JsonConvert.DeserializeObject<Root_Entity>(json);
                 Device_Identity_Entity device_identity = rootData.device_identity;
 
+                // Get tenant_id & location_id
+                (int tenant_id, int location_id) = await Helper.Get_Tenant_Location_Id(device_identity.tenant_guid, device_identity.location_guid);
+
+                // Get device_id
+                int device_id = await Helper.Get_Device_Id(device_identity.device_name, tenant_id, location_id);
+
+                // Get tenant_name & location_name
+                (string tenant_name, string location_name) = await Helper.Get_Tenant_Location_Name(tenant_id, location_id);
+
                 string device_name = device_identity.device_name;
-                string location_name = device_identity.location_name;
-                string tenant_name = device_identity.tenant_name;
                 string group_name = string.Empty;
 
                 // Policy information
@@ -176,8 +183,8 @@ namespace NetLock_Server.Agent.Windows
 
                 // Log the communicated agent information
                 Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "device_identity.device_name", device_name);
-                Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "device_identity.location_name", location_name);
-                Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "device_identity.tenant_name", tenant_name);
+                Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "location_name", location_name);
+                Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "tenant_name", tenant_name);
                 
                 MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
                 await conn.OpenAsync();
@@ -185,11 +192,11 @@ namespace NetLock_Server.Agent.Windows
                 // Get device group
                 try
                 {
-                    string query = "SELECT * FROM devices WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+                    string query = "SELECT * FROM devices WHERE device_name = @device_name AND location_id = @location_id AND tenant_id = @tenant_id;";
 
                     MySqlCommand command = new MySqlCommand(query, conn);
-                    command.Parameters.AddWithValue("@tenant_name", tenant_name);
-                    command.Parameters.AddWithValue("@location_name", location_name);
+                    command.Parameters.AddWithValue("@tenant_id", tenant_id);
+                    command.Parameters.AddWithValue("@location_id", location_id);
                     command.Parameters.AddWithValue("@device_name", device_name);
 
                     Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy (group_name)", "MySQL_Prepared_Query", query);
@@ -492,11 +499,11 @@ namespace NetLock_Server.Agent.Windows
                 // Set synced = 1
                 try
                 {
-                    string execute_query = "UPDATE devices SET synced = 1 WHERE device_name = @device_name AND location_name = @location_name AND tenant_name = @tenant_name;";
+                    string execute_query = "UPDATE devices SET synced = 1 WHERE device_name = @device_name AND location_id = @location_id AND tenant_id = @tenant_id;";
 
                     MySqlCommand command = new MySqlCommand(execute_query, conn);
-                    command.Parameters.AddWithValue("@tenant_name", tenant_name);
-                    command.Parameters.AddWithValue("@location_name", location_name);
+                    command.Parameters.AddWithValue("@tenant_id", tenant_id);
+                    command.Parameters.AddWithValue("@location_id", location_id);
                     command.Parameters.AddWithValue("@device_name", device_name);
 
                     command.ExecuteNonQuery();

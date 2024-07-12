@@ -11,8 +11,8 @@ namespace NetLock_Server.Agent.Windows
         {
             public string? agent_version { get; set; }
             public string? device_name { get; set; }
-            public string? location_name { get; set; }
-            public string? tenant_name { get; set; }
+            public string? location_guid { get; set; }
+            public string? tenant_guid { get; set; }
             public string? access_key { get; set; }
             public string? hwid { get; set; }
             public string? ip_address_internal { get; set; }
@@ -67,40 +67,25 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "type", _event.type);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "language", _event.language);
 
-                // Get device id from database
-                string device_id = String.Empty;
+                // Get tenant_id & location_id
+                (int tenant_id, int location_id) = await Helper.Get_Tenant_Location_Id(device_identity.tenant_guid, device_identity.location_guid);
 
-                // Open connection
-                await conn.OpenAsync();
+                // Get device_id
+                int device_id = await Helper.Get_Device_Id(device_identity.device_name, tenant_id, location_id);
 
-                string reader_query = "SELECT * FROM devices WHERE tenant_name = @tenant_name AND location_name = @location_name AND device_name = @device_name;";
-
-                MySqlCommand command = new MySqlCommand("SELECT * FROM devices WHERE tenant_name = @tenant_name AND location_name = @location_name AND device_name = @device_name;", conn);
-                command.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
-                command.Parameters.AddWithValue("@location_name", device_identity.location_name);
-                command.Parameters.AddWithValue("@device_name", device_identity.device_name);
-
-                Logging.Handler.Debug("Example", "MySQL_Prepared_Query", reader_query);
-
-                using (DbDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    if (reader.HasRows)
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            device_id = reader["id"].ToString();
-                        }
-                    }
-                }
+                // Get tenant_name & location_name
+                (string tenant_name, string location_name) = await Helper.Get_Tenant_Location_Name(tenant_id, location_id);
 
                 //Insert into database
                 string execute_query = "INSERT INTO `events` ( `device_id`, `tenant_name_snapshot`, `location_name_snapshot`, `device_name`, `date`, `severity`, `reported_by`, `_event`, `description`, `type`, `language`) VALUES (@device_id, @tenant_name, @location_name, @device_name, @date, @severity, @reported_by, @event, @description, @type, @language)";
 
+                await conn.OpenAsync();
+
                 MySqlCommand cmd = new MySqlCommand(execute_query, conn);
 
                 cmd.Parameters.AddWithValue("@device_id", device_id);
-                cmd.Parameters.AddWithValue("@tenant_name", device_identity.tenant_name);
-                cmd.Parameters.AddWithValue("@location_name", device_identity.location_name);
+                cmd.Parameters.AddWithValue("@tenant_name", tenant_name);
+                cmd.Parameters.AddWithValue("@location_name", location_name);
                 cmd.Parameters.AddWithValue("@device_name", device_identity.device_name);
                 cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 cmd.Parameters.AddWithValue("@severity", _event.severity);

@@ -13,8 +13,8 @@ namespace NetLock_Server.Agent.Windows
         {
             public string? agent_version { get; set; }
             public string? device_name { get; set; }
-            public string? location_name { get; set; }
-            public string? tenant_name { get; set; }
+            public string? location_guid{ get; set; }
+            public string? tenant_guid { get; set; }
             public string? access_key { get; set; }
             public string? hwid { get; set; }
             public string? ip_address_internal { get; set; }

@@ -11,6 +11,7 @@ using System.Text.Json;
 using static NetLock_Server.Agent.Windows.Authentification;
 using Microsoft.Extensions.DependencyInjection;
 using NetLock_Server;
+using Microsoft.Extensions.Primitives;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,27 @@ app.MapPost("/Agent/Windows/Check_Version", async context =>
         // Get the remote IP address
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString();
 
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
         // Read the JSON data
         string json;
         using (StreamReader reader = new StreamReader(context.Request.Body))
@@ -104,6 +126,27 @@ app.MapPost("/Agent/Windows/Verify_Device", async context =>
         // Get the remote IP address from the X-Forwarded-For header
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
 
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
         // Read the JSON data
         string json;
         using (StreamReader reader = new StreamReader(context.Request.Body))
@@ -138,6 +181,27 @@ app.MapPost("/Agent/Windows/Update_Device_Information", async context =>
 
         // Get the remote IP address from the X-Forwarded-For header
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
 
         // Read the JSON data
         string json;
@@ -185,6 +249,27 @@ app.MapPost("/Agent/Windows/Events", async context =>
         // Get the remote IP address from the X-Forwarded-For header
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
 
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
         // Read the JSON data
         string json;
         using (StreamReader reader = new StreamReader(context.Request.Body))
@@ -230,6 +315,27 @@ app.MapPost("/Agent/Windows/Policy", async context =>
         // Get the remote IP address from the X-Forwarded-For header
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
 
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
         // Read the JSON data
         string json;
         using (StreamReader reader = new StreamReader(context.Request.Body))
@@ -264,8 +370,8 @@ app.MapPost("/Agent/Windows/Policy", async context =>
     }
 }).WithName("Swagger4").WithOpenApi();
 
-//Remote Command
-app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubContext<CommandHub> hubContext) =>
+//Remote Command: Will be used in later development
+/*app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubContext<CommandHub> hubContext) =>
 {
     try
     {
@@ -276,6 +382,27 @@ app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubCon
 
         // Get the remote IP address
         string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString();
+
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Helper.Verify_Package_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
 
         string api_key = string.Empty;
 
@@ -321,13 +448,15 @@ app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubCon
         await context.Response.WriteAsync("Invalid request.");
     }
 }).WithName("Swagger5").WithOpenApi();
+*/
 
-// File upload
-app.MapPost("/public_upload", async context =>
+// File upload public
+/*
+app.MapPost("/public/upload", async context =>
 {
     try
     {
-        Logging.Handler.Debug("POST Request Mapping", "/public_upload", "Request received.");
+        Logging.Handler.Debug("/public/upload", "Request received.", "");
 
         // Add headers
         context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
@@ -339,7 +468,7 @@ app.MapPost("/public_upload", async context =>
         if (!context.Request.HasFormContentType)
         {
             context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Invalid request. No file uploaded.");
+            await context.Response.WriteAsync("Invalid request. No file uploaded #1.");
             return;
         }
 
@@ -348,47 +477,50 @@ app.MapPost("/public_upload", async context =>
         if (file == null || file.Length == 0)
         {
             context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Invalid request. No file uploaded.");
+            await context.Response.WriteAsync("Invalid request. No file uploaded #2.");
             return;
         }
 
         // Set the upload path
-        var uploadPath = Application_Paths._public_uploads;
+        var uploadPath = Application_Paths._public_uploads_user;
+
+        Logging.Handler.Debug("/public/upload", "uploadPath", uploadPath);
 
         // Ensure the upload directory exists
         if (!Directory.Exists(uploadPath))
-        {
             Directory.CreateDirectory(uploadPath);
-        }
 
         // Save the file
         var filePath = Path.Combine(uploadPath, file.FileName);
+        Logging.Handler.Debug("/public/upload", "filePath", filePath);
+
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
 
         context.Response.StatusCode = 200;
-        await context.Response.WriteAsync("File uploaded successfully.");
+        await context.Response.WriteAsync("0"); // success
     }
     catch (Exception ex)
     {
-        Logging.Handler.Error("POST Request Mapping", "/public_upload", ex.Message);
+        Logging.Handler.Error("/public/upload", "General error", ex.Message);
 
         context.Response.StatusCode = 500;
-        await context.Response.WriteAsync("An error occurred while uploading the file.");
+        await context.Response.WriteAsync("1"); // something went wrong
     }
 }).WithName("public_upload").WithOpenApi();
+*/
 
-// File download
+// File download public
 app.MapGet("/public/downloads/{fileName}", async context =>
 {
     try
     {
-        Logging.Handler.Debug("GET Request Mapping", "/public_download", "Request received.");
+        Logging.Handler.Debug("/public/downloads", "Request received.", "");
 
         var fileName = (string)context.Request.RouteValues["fileName"];
-        var downloadPath = Application_Paths._public_downloads + "\\" + fileName;
+        var downloadPath = Application_Paths._public_downloads_user + "\\" + fileName;
 
         if (!File.Exists(downloadPath))
         {
@@ -417,6 +549,251 @@ app.MapGet("/public/downloads/{fileName}", async context =>
         await context.Response.WriteAsync("An error occurred while downloading the file.");
     }
 }).WithName("public_download").WithOpenApi();
+
+// File upload private - admin, will be use in later development
+app.MapPost("/private/upload/remote/temp", async context =>
+{
+    try
+    {
+        Logging.Handler.Debug("/private/upload", "Request received.", "");
+
+        // Add headers
+        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+        // Get the remote IP address from the X-Forwarded-For header
+        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
+        // Check authorization
+        bool hasAdminUsername= context.Request.Headers.TryGetValue("username", out StringValues admin_username);
+        bool hasAdminPassword = context.Request.Headers.TryGetValue("password", out StringValues admin_password);
+        Logging.Handler.Debug("/private/upload", "hasAdminUsername", hasAdminUsername.ToString());
+        Logging.Handler.Debug("/private/upload", "hasAdminPassword", hasAdminPassword.ToString());
+
+   
+        if (!hasAdminUsername || !hasAdminPassword)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+
+        // Verify admin identity
+        bool adminIdentityStatus = await Authentification.Verify_Admin(admin_username, admin_password);
+
+        if (!adminIdentityStatus)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+
+        // Check if the request has a file
+        if (!context.Request.HasFormContentType)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Invalid request. No file uploaded #1.");
+            return;
+        }
+
+        var form = await context.Request.ReadFormAsync();
+        var file = form.Files.FirstOrDefault();
+        if (file == null || file.Length == 0)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Invalid request. No file uploaded #2.");
+            return;
+        }
+
+        // Set the upload path
+        var uploadPath = Application_Paths._private_uploads_remote_temp;
+
+        Logging.Handler.Debug("/private/upload", "uploadPath", uploadPath);
+
+        // Ensure the upload directory exists
+        if (!Directory.Exists(uploadPath))
+            Directory.CreateDirectory(uploadPath);
+
+        // Delete existing file
+        var existingFile = Path.Combine(uploadPath, file.FileName);
+        if (File.Exists(existingFile))
+            File.Delete(existingFile);
+
+        // Save the file
+        var filePath = Path.Combine(uploadPath, file.FileName);
+        Logging.Handler.Debug("/private/upload", "filePath", filePath);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        context.Response.StatusCode = 200;
+        await context.Response.WriteAsync("0"); // success
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("/private/upload", "General error", ex.Message);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("1"); // something went wrong
+    }
+}).WithName("private_upload").WithOpenApi();
+
+// File download private - admin, will be use in later development
+app.MapGet("/private/downloads/remote/temp/{fileName}", async context =>
+{
+    try
+    {
+        Logging.Handler.Debug("private/downloads/", "Request received.", "");
+
+        // Add headers
+        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+        // Get the remote IP address from the X-Forwarded-For header
+        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Check authorization
+        bool hasAdminUsername = context.Request.Headers.TryGetValue("username", out StringValues admin_username);
+        bool hasAdminPassword = context.Request.Headers.TryGetValue("password", out StringValues admin_password);
+        Logging.Handler.Debug("/private/upload", "hasAdminUsername", hasAdminUsername.ToString());
+        Logging.Handler.Debug("/private/upload", "hasAdminPassword", hasAdminPassword.ToString());
+
+        if (!hasAdminUsername || !hasAdminPassword)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+
+        // Verify admin identity
+        bool adminIdentityStatus = await Authentification.Verify_Admin(admin_username, admin_password);
+
+        if (!adminIdentityStatus)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+
+        var fileName = (string)context.Request.RouteValues["fileName"];
+        var downloadPath = Application_Paths._private_downloads_remote_temp+ "\\" + fileName;
+
+        if (!File.Exists(downloadPath))
+        {
+            Logging.Handler.Error("GET Request Mapping", "/public_download", "File not found: " + downloadPath);
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync("File not found.");
+            return;
+        }
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(downloadPath, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        context.Response.ContentType = "application/octet-stream";
+        context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
+        await memory.CopyToAsync(context.Response.Body);
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("GET Request Mapping", "/public_download", ex.Message);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An error occurred while downloading the file.");
+    }
+}).WithName("private_download").WithOpenApi();
+
+// NetLock files download private - GUID
+app.MapGet("/private/downloads/netlock/{fileName}", async context =>
+{
+    try
+    {
+        Logging.Handler.Debug("/private/downloads/netlock", "Request received.", "");
+
+        // Add headers
+        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+        // Get the remote IP address from the X-Forwarded-For header
+        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        Logging.Handler.Debug("/private/downloads/netlock", "hasGuid", hasPackageGuid.ToString());
+
+        if (hasPackageGuid == false)
+        {
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
+        var fileName = (string)context.Request.RouteValues["fileName"];
+        var downloadPath = Application_Paths._private_downloads_netlock + "\\" + fileName;
+
+        if (!File.Exists(downloadPath))
+        {
+            Logging.Handler.Error("/private/downloads/netlock", "File not found", downloadPath);
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync("File not found.");
+            return;
+        }
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(downloadPath, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        context.Response.ContentType = "application/octet-stream";
+        context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
+        await memory.CopyToAsync(context.Response.Body);
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("/private/downloads/netlock", "General error", ex.Message);
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An error occurred while downloading the file.");
+    }
+}).WithName("private_download_netlock").WithOpenApi();
+
 
 
 //Start server
