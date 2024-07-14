@@ -17,8 +17,8 @@ namespace NetLock_Server.SignalR
         {
             public string? agent_version { get; set; }
             public string? device_name { get; set; }
-            public string? location_name { get; set; }
-            public string? tenant_name { get; set; }
+            public string? location_guid { get; set; }
+            public string? tenant_guid { get; set; }
             public string? access_key { get; set; }
             public string? hwid { get; set; }
             public string? ip_address_internal { get; set; }
@@ -50,8 +50,8 @@ namespace NetLock_Server.SignalR
         {
             public string device_id { get; set; }
             public string device_name { get; set; }
-            public string location_name { get; set; } 
-            public string tenant_name { get; set; }
+            public string location_guid { get; set; } 
+            public string tenant_guid { get; set; }
         }
 
         public class Command
@@ -148,11 +148,11 @@ namespace NetLock_Server.SignalR
             return base.OnDisconnectedAsync(exception);
         }
 
-        public async Task<string> Get_Device_ClientId(string device_name, string location_name, string tenant_name)
+        public async Task<string> Get_Device_ClientId(string device_name, string location_guid, string tenant_guid)
         {
             try
             {
-                Logging.Handler.Debug("SignalR CommandHub", "Get_Device_ClientID", $"Device: {device_name}, Location: {location_name}, Tenant: {tenant_name}");
+                Logging.Handler.Debug("SignalR CommandHub", "Get_Device_ClientID", $"Device: {device_name}, Location: {location_guid}, Tenant: {tenant_guid}");
 
                 // List all connected clients
                 foreach (var client in _clientConnections)
@@ -167,8 +167,8 @@ namespace NetLock_Server.SignalR
                         var rootData = JsonSerializer.Deserialize<Root_Entity>(x.Value);
                         return rootData?.device_identity != null &&
                                rootData.device_identity.device_name == device_name &&
-                               rootData.device_identity.location_name == location_name &&
-                               rootData.device_identity.tenant_name == tenant_name;
+                               rootData.device_identity.location_guid == location_guid &&
+                               rootData.device_identity.tenant_guid == tenant_guid;
                     }
                     catch (JsonException)
                     {
@@ -419,7 +419,7 @@ namespace NetLock_Server.SignalR
                 // Decode the received JSON
                 string adminIdentityJson = String.Empty;
                 adminIdentityJson = Uri.UnescapeDataString(message);
-                Logging.Handler.Debug("Agent.Windows.Authentification.MessageReceivedFromWebconsole", "adminIdentityJson", adminIdentityJson);
+                Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "adminIdentityJson", adminIdentityJson);
 
                 // Deserialize the JSON
                 Root_Entity rootData = new Root_Entity();
@@ -434,15 +434,15 @@ namespace NetLock_Server.SignalR
                 Command command = new Command();
                 command = rootData.command;
 
-                Logging.Handler.Debug("Agent.Windows.Authentification.MessageReceivedFromWebconsole", "rootData", "extracted");
-                Logging.Handler.Debug("Agent.Windows.Authentification.MessageReceivedFromWebconsole", "target_device.device_name", target_device.device_name);
+                Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "rootData", "extracted");
+                Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "target_device.device_name", target_device.device_name);
 
                 string commandJson = JsonSerializer.Serialize(command);
 
-                Logging.Handler.Debug("Agent.Windows.Authentification.MessageReceivedFromWebconsole", "commandJson", commandJson);
+                Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "commandJson", commandJson);
 
                 // Get client id
-                string client_id = await Get_Device_ClientId(target_device.device_name, target_device.location_name, target_device.tenant_name);
+                string client_id = await Get_Device_ClientId(target_device.device_name, target_device.location_guid, target_device.tenant_guid);
 
                 Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", $"Client ID: {client_id}");
 
