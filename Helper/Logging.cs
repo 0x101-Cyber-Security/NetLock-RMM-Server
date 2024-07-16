@@ -14,10 +14,25 @@ namespace Logging
             public string content { get; set; } = string.Empty;
         }
 
+        public static bool Check_Debug_Mode()
+        {
+            try
+            {
+                if (File.Exists(Application_Paths.debug_txt_path))
+                    return true;
+                else
+                    return false;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
         private static void chck_dir()
         {
-            if (Directory.Exists(Application_Paths.program_data_logs) == false)
-                Directory.CreateDirectory(Application_Paths.program_data_logs);
+            if (Directory.Exists(Application_Paths.logs_dir) == false)
+                Directory.CreateDirectory(Application_Paths.logs_dir);
         }
 
         public static string Generate_ID(int length)
@@ -31,6 +46,9 @@ namespace Logging
         {
             try
             {
+                if (!Check_Debug_Mode())
+                    return;
+
                 chck_dir();
 
                 Log_Data json_object = new Log_Data();
@@ -47,7 +65,7 @@ namespace Logging
 
                 string log_json = JsonSerializer.Serialize(json_object, options);
 
-                File.AppendAllText(Application_Paths.program_data_logs + @"\debug.txt", log_json + Environment.NewLine);
+                File.AppendAllText(Application_Paths.logs_dir + @"\debug.txt", log_json + Environment.NewLine);
             }
             catch
             { }
@@ -57,6 +75,9 @@ namespace Logging
         {
             try
             {
+                if (!Check_Debug_Mode())
+                    return;
+
                 chck_dir();
 
                 Log_Data json_object = new Log_Data();
@@ -72,7 +93,7 @@ namespace Logging
                 };
 
                 string log_json = JsonSerializer.Serialize(json_object, options);
-                File.AppendAllText(Application_Paths.program_data_logs + @"\error.txt", log_json + Environment.NewLine);
+                File.AppendAllText(Application_Paths.logs_dir + @"\error.txt", log_json + Environment.NewLine);
             }
             catch
             { }

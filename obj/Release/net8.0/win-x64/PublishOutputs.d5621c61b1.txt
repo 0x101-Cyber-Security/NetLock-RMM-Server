@@ -1,0 +1,5 @@
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Release\net8.0\win-x64\PubTmp\Out\appsettings.Development.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Release\net8.0\win-x64\PubTmp\Out\appsettings.json
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Release\net8.0\win-x64\PubTmp\Out\NetLock RMM Server.pdb
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Release\net8.0\win-x64\PubTmp\Out\aspnetcorev2_inprocess.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Release\net8.0\win-x64\PubTmp\Out\NetLock RMM Server.exe

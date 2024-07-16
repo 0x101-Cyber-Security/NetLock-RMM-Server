@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Release\net8.0\publish\</_PublishTargetUrl>
+    <History>True|2024-07-16T21:47:12.5817375Z||;True|2024-07-16T23:12:24.6559454+02:00||;True|2024-07-16T22:41:55.0595809+02:00||;True|2024-07-16T22:41:18.0536942+02:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

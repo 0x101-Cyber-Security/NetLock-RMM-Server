@@ -79,3 +79,9 @@ C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\ref\NetLock RMM Server.dll
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock .0E714E9E.Up2Date
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\BCrypt.Net-Next.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\Certes.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\LettuceEncrypt.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\McMaster.AspNetCore.Kestrel.Certificates.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\BouncyCastle.Crypto.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\Interop.NetFwTypeLib.dll
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock RMM Server.csproj.ResolveComReference.cache

@@ -4,6 +4,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using System;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace NetLock_Server.Agent.Windows
 {
@@ -50,29 +52,11 @@ namespace NetLock_Server.Agent.Windows
                 string agent_version = device_identity.agent_version;
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "Communicated agent version", agent_version);
 
-                // Read the appsettings.json file
-                string appsettings_json = File.ReadAllText(Environment.CurrentDirectory + @"\appsettings.json");
-                Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "appsettings_json", appsettings_json);
+                // Get assembly version
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 
-                string windowsAgentVersion = string.Empty;
-
-                // Deserialisierung des gesamten JSON-Strings
-                using (JsonDocument document = JsonDocument.Parse(appsettings_json))
-                {
-                    JsonElement root = document.RootElement;
-
-                    // Zugriff auf das "Version_Information"-Objekt
-                    JsonElement versionInfoElement = root.GetProperty("Version_Information");
-
-                    // Zugriff auf das "Windows_Agent"-Attribut innerhalb von "Version_Information"
-                    JsonElement windowsElement = versionInfoElement.GetProperty("Windows");
-
-                    // Zugriff auf das "Windows_Agent"-Attribut innerhalb von "Version_Information"
-                    JsonElement commAgentElement = windowsElement.GetProperty("Comm_Agent");
-
-                    // Konvertierung des Werts von "Windows_Agent" in einen String
-                    windowsAgentVersion = commAgentElement.GetString();
-                }
+                string windowsAgentVersion = fvi.ProductVersion;
 
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "windowsAgentVersion", windowsAgentVersion);
 
