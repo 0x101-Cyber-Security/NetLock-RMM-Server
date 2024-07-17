@@ -378,6 +378,14 @@ namespace NetLock_Server.Agent.Windows
 
             public async Task InvokeAsync(HttpContext context)
             {
+                if (!await Helper.Get_Role_Status("Remote"))
+                {
+                    Logging.Handler.Debug("Agent.Windows.Authentification.InvokeAsync", "Trust role", "Trust role is not enabled.");
+                    context.Response.StatusCode = 401; // Unauthorized
+                    await context.Response.WriteAsync("Unauthorized.");
+                    return;
+                }
+
                 MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
 
                 try

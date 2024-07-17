@@ -865,7 +865,7 @@ if (role_file)
 }
 
 // NetLock files download private - GUID
-if (role_update)
+if (role_update || role_trust)
 {
     app.MapGet("/private/downloads/netlock/{fileName}", async context =>
     {
@@ -904,6 +904,27 @@ if (role_update)
 
             var fileName = (string)context.Request.RouteValues["fileName"];
             var downloadPath = Application_Paths._private_downloads_netlock + "\\" + fileName;
+
+            // Verify roles
+            if (!role_update)
+            {
+                if (fileName == "comm.package" || fileName == "health.package" || fileName == "remote.package" || fileName == "uninstaller.package")
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized.");
+                    return;
+                }
+            }
+
+            if (!role_trust)
+            {
+                if (fileName == "comm.package.sha512" || fileName == "health.package.sha512" || fileName == "remote.package.sha512" || fileName == "uninstaller.package.sha512")
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized.");
+                    return;
+                }
+            }
 
             if (!File.Exists(downloadPath))
             {
