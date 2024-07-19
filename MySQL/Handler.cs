@@ -10,9 +10,9 @@ namespace NetLock_Server.MySQL
 {
     public class Handler
     {
-        public static bool Test_Connection()
+        public static async Task<bool> Test_Connection()
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -33,7 +33,7 @@ namespace NetLock_Server.MySQL
 
         public static async Task<bool> Check_Duplicate(string query)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -61,7 +61,7 @@ namespace NetLock_Server.MySQL
 
         public static async Task<bool> Execute_Command(string query)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {

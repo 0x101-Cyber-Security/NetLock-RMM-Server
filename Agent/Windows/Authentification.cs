@@ -51,7 +51,7 @@ namespace NetLock_Server.Agent.Windows
 
         public static async Task<string> Verify_Device(string json, string ip_address_external)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -132,11 +132,15 @@ namespace NetLock_Server.Agent.Windows
                 {
                     await reader.CloseAsync();
 
+                    (string tenant_name, string location_name) = await Helper.Get_Tenant_Location_Name(tenant_id, location_id);
+
                     device_exists = false;
                     string execute_query = "INSERT INTO `devices` " +
                         "(`agent_version`, " +
                         "`tenant_id`, " +
+                        "`tenant_name`, " +
                         "`location_id`, " +
+                        "`location_name`, " +
                         "`device_name`, " +
                         "`access_key`, " +
                         "`hwid`, " +
@@ -159,7 +163,9 @@ namespace NetLock_Server.Agent.Windows
                         "VALUES " +
                         "(@agent_version, " +
                         "@tenant_id, " +
+                        "@tenant_name, " +
                         "@location_id, " +
+                        "@location_name, " +
                         "@device_name, " +
                         "@access_key, " +
                         "@hwid, " +
@@ -184,7 +190,9 @@ namespace NetLock_Server.Agent.Windows
 
                     cmd.Parameters.AddWithValue("@agent_version", device_identity.agent_version);
                     cmd.Parameters.AddWithValue("@tenant_id", tenant_id);
+                    cmd.Parameters.AddWithValue("@tenant_name", tenant_name);
                     cmd.Parameters.AddWithValue("@location_id", location_id);
+                    cmd.Parameters.AddWithValue("@location_name", location_name);
                     cmd.Parameters.AddWithValue("@device_name", device_identity.device_name);
                     cmd.Parameters.AddWithValue("@access_key", device_identity.access_key);
                     cmd.Parameters.AddWithValue("@hwid", device_identity.hwid);
@@ -297,7 +305,7 @@ namespace NetLock_Server.Agent.Windows
         {
             bool isPasswordCorrect = false;
 
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -333,7 +341,7 @@ namespace NetLock_Server.Agent.Windows
         {
             bool isCorrect = false;
 
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -386,7 +394,7 @@ namespace NetLock_Server.Agent.Windows
                     return;
                 }
 
-                MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+                MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
                 try
                 {

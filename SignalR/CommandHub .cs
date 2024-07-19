@@ -309,7 +309,7 @@ namespace NetLock_Server.SignalR
                 // insert result into history table
                 if (type == 0) // remote shell
                 {
-                    MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+                    MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
                     try
                     {

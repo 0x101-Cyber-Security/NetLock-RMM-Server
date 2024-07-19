@@ -186,7 +186,7 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "location_name", location_name);
                 Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "tenant_name", tenant_name);
                 
-                MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+                MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
                 await conn.OpenAsync();
 
                 // Get device group

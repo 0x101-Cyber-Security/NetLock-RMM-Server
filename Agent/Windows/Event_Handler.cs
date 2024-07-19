@@ -50,7 +50,7 @@ namespace NetLock_Server.Agent.Windows
         {
             Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "json", json);
 
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {

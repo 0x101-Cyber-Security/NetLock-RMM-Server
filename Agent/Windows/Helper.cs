@@ -8,7 +8,7 @@ namespace NetLock_Server.Agent.Windows
         // Get the tenant id & location id with tenant_guid & location_guid
         public static async Task<(int, int)> Get_Tenant_Location_Id(string tenant_guid, string location_guid)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -58,7 +58,7 @@ namespace NetLock_Server.Agent.Windows
         // Get tenant and location name with tenant id & location id
         public static async Task<(string, string)> Get_Tenant_Location_Name(int tenant_id, int location_id)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {
@@ -108,7 +108,7 @@ namespace NetLock_Server.Agent.Windows
         // Get device id with device name, tenant id & location id
         public static async Task<int> Get_Device_Id(string device_name, int tenant_id, int location_id)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
             try
             {

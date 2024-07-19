@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Release\net8.0\publish\</_PublishTargetUrl>
-    <History>True|2024-07-16T21:47:12.5817375Z||;True|2024-07-16T23:12:24.6559454+02:00||;True|2024-07-16T22:41:55.0595809+02:00||;True|2024-07-16T22:41:18.0536942+02:00||;</History>
+    <History>True|2024-07-18T23:39:37.9138393Z||;True|2024-07-19T01:38:40.4190325+02:00||;True|2024-07-19T01:12:34.0176017+02:00||;True|2024-07-18T23:18:33.4543080+02:00||;True|2024-07-18T23:18:13.0004495+02:00||;True|2024-07-16T23:47:12.5817375+02:00||;True|2024-07-16T23:12:24.6559454+02:00||;True|2024-07-16T22:41:55.0595809+02:00||;True|2024-07-16T22:41:18.0536942+02:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

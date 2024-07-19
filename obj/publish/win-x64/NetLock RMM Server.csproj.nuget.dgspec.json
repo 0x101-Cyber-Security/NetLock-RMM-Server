@@ -62,12 +62,6 @@
               "target": "Package",
               "version": "[8.0.6, )"
             },
-            "Microsoft.NET.ILLink.Tasks": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[8.0.6, )",
-              "autoReferenced": true
-            },
             "MySqlConnector": {
               "target": "Package",
               "version": "[2.3.6, )"

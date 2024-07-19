@@ -34,7 +34,7 @@ namespace NetLock_Server.MySQL
                 // Read appssettings.json file
                 string json = await File.ReadAllTextAsync("appsettings.json");
 
-                Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "json", json);
+                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "json", json);
 
                 // Deserialize JSON string
                 RootData rootData = JsonSerializer.Deserialize<RootData>(json);
@@ -49,7 +49,7 @@ namespace NetLock_Server.MySQL
 
                 // Return MySQL configuration
                 string connectionString = $"Server={server};Port={port};Database={database};User={user};Password={password};SslMode={sslMode};";
-                Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "connectionString", connectionString);
+                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "connectionString", connectionString);
                 return connectionString;
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@ namespace NetLock_Server.MySQL
                 // Read appssettings.json file
                 string json = await File.ReadAllTextAsync("appsettings.json");
 
-                Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Database_Name", "json", json);
+                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Database_Name", "json", json);
 
                 // Deserialize JSON string
                 RootData rootData = JsonSerializer.Deserialize<RootData>(json);
@@ -76,7 +76,7 @@ namespace NetLock_Server.MySQL
                 string database = rootData.MySQL.Database;
 
                 // Return MySQL configuration
-                Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Database_Name", "database", database);
+                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Database_Name", "database", database);
                 return database;
             }
             catch (Exception ex)

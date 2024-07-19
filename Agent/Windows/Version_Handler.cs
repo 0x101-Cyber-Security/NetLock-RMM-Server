@@ -53,10 +53,10 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "Communicated agent version", agent_version);
 
                 // Get assembly version
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                //Assembly assembly = Assembly.GetExecutingAssembly();
+                //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 
-                string windowsAgentVersion = fvi.ProductVersion;
+                string windowsAgentVersion = Application_Settings.version;
 
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "windowsAgentVersion", windowsAgentVersion);
 

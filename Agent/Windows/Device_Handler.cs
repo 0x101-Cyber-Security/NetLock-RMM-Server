@@ -54,7 +54,7 @@ namespace NetLock_Server.Agent.Windows
 
         public static async Task<string> Update_Device_Information(string json)
         {
-            MySqlConnection conn = new MySqlConnection(Application_Settings.connectionString);
+            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
             
             try
             {

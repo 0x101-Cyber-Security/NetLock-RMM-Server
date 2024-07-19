@@ -251,6 +251,7 @@ if (role_comm)
 
             if (hasPackageGuid == false)
             {
+                Logging.Handler.Debug("POST Request Mapping", "/Agent/Windows/Verify_Device", "No guid provided. Unauthorized.");
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
