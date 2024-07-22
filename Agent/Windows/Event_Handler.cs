@@ -36,6 +36,7 @@ namespace NetLock_Server.Agent.Windows
             public string? reported_by { get; set; }
             public string? _event { get; set; }
             public string? description { get; set; }
+            public string? notification_json { get; set; }
             public string? type { get; set; }
             public string? language { get; set; }
         }
@@ -64,6 +65,7 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "reported_by", _event.reported_by);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "_event", _event._event);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "description", _event.description);
+                Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "notification_json", _event.notification_json);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "type", _event.type);
                 Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "language", _event.language);
 
@@ -77,7 +79,7 @@ namespace NetLock_Server.Agent.Windows
                 (string tenant_name, string location_name) = await Helper.Get_Tenant_Location_Name(tenant_id, location_id);
 
                 //Insert into database
-                string execute_query = "INSERT INTO `events` ( `device_id`, `tenant_name_snapshot`, `location_name_snapshot`, `device_name`, `date`, `severity`, `reported_by`, `_event`, `description`, `type`, `language`) VALUES (@device_id, @tenant_name, @location_name, @device_name, @date, @severity, @reported_by, @event, @description, @type, @language)";
+                string execute_query = "INSERT INTO `events` ( `device_id`, `tenant_name_snapshot`, `location_name_snapshot`, `device_name`, `date`, `severity`, `reported_by`, `_event`, `description`, `notification_json`, `type`, `language`) VALUES (@device_id, @tenant_name, @location_name, @device_name, @date, @severity, @reported_by, @event, @description, @notification_json, @type, @language)";
 
                 await conn.OpenAsync();
 
@@ -92,6 +94,7 @@ namespace NetLock_Server.Agent.Windows
                 cmd.Parameters.AddWithValue("@reported_by", _event.reported_by);
                 cmd.Parameters.AddWithValue("@event", _event._event);
                 cmd.Parameters.AddWithValue("@description", _event.description);
+                cmd.Parameters.AddWithValue("@notification_json", _event.notification_json);
                 cmd.Parameters.AddWithValue("@type", _event.type);
                 cmd.Parameters.AddWithValue("@language", _event.language);
 

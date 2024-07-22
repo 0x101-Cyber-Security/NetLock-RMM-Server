@@ -79,6 +79,10 @@ else
 
 Console.ResetColor();
 
+// Check logs dir
+if (!Directory.Exists(Application_Paths.logs_dir))
+    Directory.CreateDirectory(Application_Paths.logs_dir);
+
 // Add firewall rule for HTTP
 NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());
 NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());

@@ -112,6 +112,12 @@ namespace NetLock_Server.Agent.Windows
             public bool time_scheduler_friday { get; set; }
             public bool time_scheduler_saturday { get; set; }
             public bool time_scheduler_sunday { get; set; }
+
+            // NetLock notifications
+            public bool notifications_mail { get; set; }
+            public bool notifications_microsoft_teams { get; set; }
+            public bool notifications_telegram { get; set; }
+            public bool notifications_ntfy_sh { get; set; }
         }
 
         public class Sensors_Device_Entity
