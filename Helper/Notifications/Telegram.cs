@@ -8,7 +8,7 @@ namespace Helper.Notifications
 {
     public class Telegram
     {
-        public static async Task<string> Send_Message(string bot_name, string message)
+        public static async Task<bool> Send_Message(string id, string message)
         {
             string bot_token = String.Empty;
             string chat_id = String.Empty;
@@ -19,7 +19,9 @@ namespace Helper.Notifications
             {
                 await conn.OpenAsync();
 
-                MySqlCommand command = new MySqlCommand("SELECT * FROM telegram_notifications WHERE bot_name = '" + bot_name + "';", conn);
+                MySqlCommand command = new MySqlCommand("SELECT * FROM telegram_notifications WHERE id = @id;", conn);
+                command.Parameters.AddWithValue("@id", id);
+
                 using (DbDataReader reader = await command.ExecuteReaderAsync())
                 {
                     if (reader.HasRows)
@@ -34,7 +36,7 @@ namespace Helper.Notifications
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Classes.Helper.Notifications.Telegram", "Send_Message.Query_Connector_Info", ex.Message);
+                Logging.Handler.Error("Classes.Helper.Notifications.Telegram", "Send_Message.Query_Connector_Info", ex.ToString());
             }
             finally
             {
@@ -49,12 +51,12 @@ namespace Helper.Notifications
 
                 await botClient.SendTextMessageAsync(chat_id, messageText);
 
-                return "success";
+                return true;
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Classes.Helper.Notifications.Telegram", "Send_Message.Send", "status_code: " + ex.Message);
-                return ex.Message;
+                Logging.Handler.Error("Classes.Helper.Notifications.Telegram", "Send_Message.Send", "status_code: " + ex.ToString());
+                return false;
             }       
 
         }

@@ -11,8 +11,10 @@ using System.Text.Json;
 using static NetLock_Server.Agent.Windows.Authentification;
 using Microsoft.Extensions.DependencyInjection;
 using NetLock_Server;
+using NetLock_Server.Events;
 using Microsoft.Extensions.Primitives;
 using LettuceEncrypt;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,7 @@ var role_comm = builder.Configuration.GetValue<bool>("Kestrel:Roles:Comm");
 var role_update = builder.Configuration.GetValue<bool>("Kestrel:Roles:Update");
 var role_trust = builder.Configuration.GetValue<bool>("Kestrel:Roles:Trust");
 var role_remote = builder.Configuration.GetValue<bool>("Kestrel:Roles:Remote");
+var role_notification = builder.Configuration.GetValue<bool>("Kestrel:Roles:Notification");
 var role_file = builder.Configuration.GetValue<bool>("Kestrel:Roles:File");
 
 Console.WriteLine("Configuration loaded from appsettings.json");
@@ -41,6 +44,7 @@ Console.WriteLine($"Server role (comm): {role_comm}");
 Console.WriteLine($"Server role (update): {role_update}");
 Console.WriteLine($"Server role (trust): {role_trust}");
 Console.WriteLine($"Server role (remote): {role_remote}");
+Console.WriteLine($"Server role (notification): {role_notification}");
 Console.WriteLine($"Server role (file): {role_file}");
 
 Console.WriteLine($"Http Port: {builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port")}");
@@ -139,6 +143,35 @@ builder.Services.AddSignalR(options =>
 {
     options.MaximumReceiveMessageSize = 102400000; // Increase maximum message size to 100 MB
 });
+
+// Add timer to process events for notifications
+async Task Events_Task()
+{
+    string started_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    Console.WriteLine("Periodic task executed at: " + started_time);
+    await NetLock_Server.Events.Sender.Smtp("mail_status", "mail_notifications");
+    await NetLock_Server.Events.Sender.Smtp("ms_teams_status", "microsoft_teams_notifications");
+    await NetLock_Server.Events.Sender.Smtp("telegram_status", "telegram_notifications");
+    await NetLock_Server.Events.Sender.Smtp("ntfy_sh_status", "ntfy_sh_notifications");
+
+    string finished_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    Console.WriteLine("Periodic task finished at: " + finished_time);
+
+    await NetLock_Server.Events.Sender.Mark_Old_Read(started_time, finished_time);
+}
+
+// Wrapper for Timer
+void Events_TimerCallback(object state)
+{
+    if (role_notification)
+    {
+        // Call the asynchronous method and do not block it
+        _ = Events_Task();
+    }
+}
+
+Timer events_timer = new Timer(Events_TimerCallback, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
 var app = builder.Build();
 

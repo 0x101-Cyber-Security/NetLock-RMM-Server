@@ -85,3 +85,4 @@ C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\BouncyCastle.Crypto.dll
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\Interop.NetFwTypeLib.dll
 C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock RMM Server.csproj.ResolveComReference.cache
+C:\Users\NicoMak\OneDrive - 0x101 Cyber Security\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\Telegram.Bot.dll

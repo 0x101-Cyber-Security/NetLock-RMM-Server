@@ -9,7 +9,7 @@ namespace Helper.Notifications
 {
     public class Microsoft_Teams
     {
-        public static async Task<string> Send_Message(string connector_name, string message)
+        public static async Task<bool> Send_Message(string id, string message)
         {
             string connector_url = String.Empty;
 
@@ -19,21 +19,23 @@ namespace Helper.Notifications
             {
                 await conn.OpenAsync();
 
-                MySqlCommand command = new MySqlCommand("SELECT * FROM microsoft_teams_notifications WHERE connector_name = '" + connector_name + "';", conn);
+                MySqlCommand command = new MySqlCommand("SELECT * FROM microsoft_teams_notifications WHERE id = @id;", conn);
+                command.Parameters.AddWithValue("@id", id);
+
                 using (DbDataReader reader = await command.ExecuteReaderAsync())
                 {
                     if (reader.HasRows)
                     {
                         while (await reader.ReadAsync())
                         {
-                            connector_url = await Base64.Handler.Decode(reader["connector_url"].ToString() ?? "");
+                            connector_url = reader["connector_url"].ToString() ?? String.Empty;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Classes.Helper.Notifications.Microsoft_Teams", "Send_Message.Query_Connector_Info", ex.Message);
+                Logging.Handler.Error("Classes.Helper.Notifications.Microsoft_Teams", "Send_Message.Query_Connector_Info", ex.ToString());
             }
             finally
             {
@@ -60,20 +62,20 @@ namespace Helper.Notifications
                     // Überprüfen Sie die Antwort und behandeln Sie sie entsprechend
                     if (response.IsSuccessStatusCode) //Message sent successfully 
                     {
-                        return "success";
+                        return true;
                     }
                     else //Sending message failed
                     {
                         Logging.Handler.Error("Classes.Helper.Notifications.Microsoft_Teams", "Send_Message.Send", "status_code: " + response.StatusCode.ToString());
 
-                        return response.StatusCode.ToString();
+                        return false;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Classes.Helper.Notifications.Microsoft_Teams", "Send_Message.Send", "status_code: " + ex.Message);
-                return ex.Message;
+                Logging.Handler.Error("Classes.Helper.Notifications.Microsoft_Teams", "Send_Message.Send", "status_code: " + ex.ToString());
+                return false;
             }
         }
     }
