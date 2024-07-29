@@ -1171,11 +1171,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
+      "projectUniqueName": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
       "projectName": "NetLock RMM Server",
-      "projectPath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
+      "projectPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
       "packagesPath": "C:\\Users\\NicoMak\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\NicoMak\\OneDrive - 0x101 Cyber Security\\NetLock Root\\NetLock-RMM-Server\\obj\\",
+      "outputPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\NicoMak\\AppData\\Roaming\\NuGet\\NuGet.Config",
