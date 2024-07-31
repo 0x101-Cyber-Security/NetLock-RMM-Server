@@ -37,6 +37,8 @@ var role_remote = builder.Configuration.GetValue<bool>("Kestrel:Roles:Remote");
 var role_notification = builder.Configuration.GetValue<bool>("Kestrel:Roles:Notification");
 var role_file = builder.Configuration.GetValue<bool>("Kestrel:Roles:File");
 
+Console.WriteLine("Version: " + Application_Settings.version);
+
 Console.WriteLine("Configuration loaded from appsettings.json");
 
 // Output kestrel configuration
@@ -66,6 +68,7 @@ Console.WriteLine($"MySQL Database: {mysqlConfig.Database}");
 Console.WriteLine($"MySQL User: {mysqlConfig.User}");
 Console.WriteLine($"MySQL Password: {mysqlConfig.Password}");
 Console.WriteLine($"MySQL SSL Mode: {mysqlConfig.SslMode}");
+Console.WriteLine($"MySQL additional parameters: {mysqlConfig.AdditionalConnectionParameters}");
 
 // Output firewall status
 bool microsoft_defender_firewall_status = NetLock_Server.Microsoft_Defender_Firewall.Handler.Status();

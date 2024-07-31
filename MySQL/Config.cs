@@ -10,6 +10,7 @@ namespace NetLock_Server.MySQL
         public string User { get; set; }
         public string Password { get; set; }
         public string SslMode { get; set; }
+        public string AdditionalConnectionParameters { get; set; }
 
         public class MySQL
         {
@@ -19,6 +20,8 @@ namespace NetLock_Server.MySQL
             public string User { get; set; }
             public string Password { get; set; }
             public string SslMode { get; set; }
+            public string AdditionalConnectionParameters { get; set; }
+
         }
 
         public class RootData
@@ -46,9 +49,10 @@ namespace NetLock_Server.MySQL
                 string user = rootData.MySQL.User;
                 string password = rootData.MySQL.Password;
                 string sslMode = rootData.MySQL.SslMode;
+                string additionalConnectionParameters = rootData.MySQL.AdditionalConnectionParameters;
 
                 // Return MySQL configuration
-                string connectionString = $"Server={server};Port={port};Database={database};User={user};Password={password};SslMode={sslMode};";
+                string connectionString = $"Server={server};Port={port};Database={database};User={user};Password={password};SslMode={sslMode};{additionalConnectionParameters}";
                 //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "connectionString", connectionString);
                 return connectionString;
             }
