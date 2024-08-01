@@ -146,8 +146,7 @@
               "RelativeToolTip": "Agent\\Windows\\Authentification.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAEAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.82Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.82Z"
             },
             {
               "$type": "Document",
@@ -159,8 +158,7 @@
               "RelativeToolTip": "Agent\\Windows\\Version_Handler.cs",
               "ViewState": "AQIAACAAAAAAAAAAAAAswDoAAABJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T22:36:13.611Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T22:36:13.611Z"
             },
             {
               "$type": "Document",
@@ -172,8 +170,7 @@
               "RelativeToolTip": "Agent\\Windows\\Event_Handler.cs",
               "ViewState": "AQIAACoAAAAAAAAAAAAYwCgAAAAxAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.813Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.813Z"
             },
             {
               "$type": "Document",
@@ -185,8 +182,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AQIAABcAAAAAAAAAAAApwD8AAABVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.945Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.945Z"
             },
             {
               "$type": "Document",
@@ -247,8 +243,7 @@
               "RelativeToolTip": "Agent\\Windows\\Policy_Handler.cs",
               "ViewState": "AQIAAGgBAAAAAAAAAAAowHoBAAAjAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-29T14:11:43.079Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-29T14:11:43.079Z"
             },
             {
               "$type": "Document",
@@ -260,8 +255,7 @@
               "RelativeToolTip": "Agent\\Windows\\Device_Handler.cs",
               "ViewState": "AQIAAKAAAAAAAAAAAIBJwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.818Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.818Z"
             },
             {
               "$type": "Document",
@@ -273,8 +267,7 @@
               "RelativeToolTip": "Microsoft_Defender_Firewall\\Handler.cs",
               "ViewState": "AQIAABUAAAAAAAAAAAAgwC4AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-16T21:19:09.89Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-16T21:19:09.89Z"
             },
             {
               "$type": "Document",
@@ -298,8 +291,7 @@
               "RelativeToolTip": "Application_Settings.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAABXAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.943Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.943Z"
             },
             {
               "$type": "Document",
@@ -311,8 +303,7 @@
               "RelativeToolTip": "MySQL\\Config.cs",
               "ViewState": "AQIAABUAAAAAAAAAAAA2wDYAAACTAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-16T20:07:11.573Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-16T20:07:11.573Z"
             },
             {
               "$type": "Document",
@@ -324,8 +315,7 @@
               "RelativeToolTip": "Agent\\Windows\\Helper.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABkAAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-12T17:40:44.251Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-12T17:40:44.251Z"
             },
             {
               "$type": "Document",
@@ -337,8 +327,7 @@
               "RelativeToolTip": "Events\\Sender.cs",
               "ViewState": "AQIAAF4AAAAAAAAAAAAgwHkAAACDAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-21T22:44:04.519Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-21T22:44:04.519Z"
             },
             {
               "$type": "Document",
@@ -362,8 +351,7 @@
               "RelativeToolTip": "Helper\\Notifications\\Smtp.cs",
               "ViewState": "AQIAAAMAAAAAAAAAAIBJwBQAAAAlAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-21T23:43:17.893Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-21T23:43:17.893Z"
             },
             {
               "$type": "Document",
@@ -375,8 +363,7 @@
               "RelativeToolTip": "SignalR\\CommandHub .cs",
               "ViewState": "AQIAAG8AAAAAAAAAAAAswA8AAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-28T19:37:29.553Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-06-28T19:37:29.553Z"
             },
             {
               "$type": "Document",
@@ -447,8 +434,7 @@
               "RelativeToolTip": "Helper\\Random.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.811Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.811Z"
             },
             {
               "$type": "Document",
