@@ -5,8 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <RootNamespace>NetLock_Server</RootNamespace>
+    <RootNamespace>NetLock_RMM_Server</RootNamespace>
     <SignAssembly>False</SignAssembly>
+    <AssemblyName>NetLock_RMM_Server</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

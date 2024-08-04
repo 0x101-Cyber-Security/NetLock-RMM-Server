@@ -49,6 +49,7 @@ Console.WriteLine($"Server role (remote): {role_remote}");
 Console.WriteLine($"Server role (notification): {role_notification}");
 Console.WriteLine($"Server role (file): {role_file}");
 
+Console.WriteLine($"Http: {builder.Configuration.GetValue<bool>("Kestrel:Endpoint:Http:Enabled")}");
 Console.WriteLine($"Http Port: {builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port")}");
 Console.WriteLine($"Https: {https}");
 Console.WriteLine($"Https Port: {builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port")}");

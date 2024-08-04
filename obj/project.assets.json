@@ -1185,7 +1185,7 @@
     "version": "1.0.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
-      "projectName": "NetLock RMM Server",
+      "projectName": "NetLock_RMM_Server",
       "projectPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
       "packagesPath": "C:\\Users\\NicoMak\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\obj\\",

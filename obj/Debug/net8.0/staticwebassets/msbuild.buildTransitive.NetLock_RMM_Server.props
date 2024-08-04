@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\NetLock_RMM_Server.props" />
+</Project>
