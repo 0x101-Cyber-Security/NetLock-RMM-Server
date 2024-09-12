@@ -100,7 +100,9 @@ if (https)
     // Add firewall rule for HTTPS
     NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
     NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
-    builder.Services.AddLettuceEncrypt();
+
+    if (letsencrypt)
+        builder.Services.AddLettuceEncrypt();
 }
 
 // Configure Kestrel server options
@@ -906,7 +908,61 @@ if (role_file)
     }).WithName("private_download").WithOpenApi();
 }
 
-// NetLock files download private - GUID
+// NetLock private support files, get index
+if (role_update || role_trust)
+{
+    app.MapGet("/admin/files", async context =>
+    {
+        try
+        {
+            Logging.Handler.Debug("/private/downloads/netlock", "Request received.", "");
+
+            // Add headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+            // Get the remote IP address from the X-Forwarded-For header
+            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+            // Verify api-key
+            bool hasApiKey = context.Request.Headers.TryGetValue("Api-Key", out StringValues files_api_key);
+
+            Logging.Handler.Debug("/private/downloads/netlock", "hasGuid", hasApiKey.ToString());
+
+            if (hasApiKey == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+            else
+            {
+                bool api_key_valid = await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key);
+
+                if (api_key_valid == false)
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized.");
+                    return;
+                }
+            }
+
+            // Get folders and files in the directory and return them as JSON array
+            var directoryTree = NetLock_RMM_Server.Helper.IO.BuildDirectoryTree(Application_Paths._private_files_admin);
+
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree));
+        }
+        catch (Exception ex)
+        {
+            Logging.Handler.Error("/private/downloads/netlock", "General error", ex.Message);
+
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("An error occurred while downloading the file.");
+        }
+    }).WithName("private_download_netlock_index").WithOpenApi();
+}
+
+// NetLock files download private - GUID, used for update server & trust server
 if (role_update || role_trust)
 {
     app.MapGet("/private/downloads/netlock/{fileName}", async context =>
@@ -945,7 +1001,10 @@ if (role_update || role_trust)
             }
 
             var fileName = (string)context.Request.RouteValues["fileName"];
-            var downloadPath = Application_Paths._private_downloads_netlock + "\\" + fileName;
+
+            var downloadPath = Path.Combine(Application_Paths._private_downloads_netlock, fileName);
+
+            //var downloadPath = Application_Paths._private_downloads_netlock + "\\" + fileName;
 
             // Verify roles
             if (!role_update)

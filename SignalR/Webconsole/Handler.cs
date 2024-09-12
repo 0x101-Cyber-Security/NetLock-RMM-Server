@@ -16,7 +16,7 @@ namespace NetLock_Server.SignalR.Webconsole
             public Remote_Identity? remote_identity { get; set; }
         }
 
-        public static async Task<bool> Verify_Api_Key(string json)
+        /*public static async Task<bool> Verify_Api_Key(string json)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace NetLock_Server.SignalR.Webconsole
                 Logging.Handler.Error("SignalR.Webconsole.Verify_Api_Key", "general_error", ex.ToString());
                 return false;
             }
-        }
+        }*/
 
         public static async Task<string> Get_Command(string json)
         {
