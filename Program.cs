@@ -15,6 +15,8 @@ using NetLock_Server.Events;
 using Microsoft.Extensions.Primitives;
 using LettuceEncrypt;
 using System.Threading;
+using System.IO;
+using NetLock_RMM_Server.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -268,7 +270,7 @@ if (role_comm)
         catch (Exception ex)
         {
             context.Response.StatusCode = 500;
-            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Check_Version", ex.Message);
+            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Check_Version", ex.ToString());
             await context.Response.WriteAsync("Invalid request.");
         }
     }).WithName("Swagger0").WithOpenApi();
@@ -325,7 +327,7 @@ if (role_comm)
         }
         catch (Exception ex)
         {
-            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Verify_Device", ex.Message);
+            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Verify_Device", ex.ToString());
 
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
@@ -900,7 +902,7 @@ if (role_file)
         }
         catch (Exception ex)
         {
-            Logging.Handler.Error("GET Request Mapping", "/public_download", ex.Message);
+            Logging.Handler.Error("GET Request Mapping", "/public_download", ex.ToString());
 
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("An error occurred while downloading the file.");
@@ -909,57 +911,78 @@ if (role_file)
 }
 
 // NetLock private support files, get index
-if (role_update || role_trust)
+if (role_file)
 {
-    app.MapGet("/admin/files", async context =>
+    app.MapPost("/admin/files/index/{path}", async (HttpContext context, string path) =>
     {
         try
         {
-            Logging.Handler.Debug("/private/downloads/netlock", "Request received.", "");
+            // Check if path is empty
+            if (string.IsNullOrEmpty(path))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Invalid request.");
+                return;
+            }
+
+            // Check if base path
+            if (string.IsNullOrEmpty(path) || path.Equals("base1337", StringComparison.OrdinalIgnoreCase))
+            {
+                path = String.Empty;
+            }
+            else
+            {
+                // Decode the URL-encoded path
+                path = Uri.UnescapeDataString(path);
+            }
+
+            Logging.Handler.Debug("/admin/files", "Request received.", path);
 
             // Add headers
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
 
             // Get the remote IP address from the X-Forwarded-For header
-            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue)
+                ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
 
-            // Verify api-key
-            bool hasApiKey = context.Request.Headers.TryGetValue("Api-Key", out StringValues files_api_key);
+            // Verify API key
+            bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
 
-            Logging.Handler.Debug("/private/downloads/netlock", "hasGuid", hasApiKey.ToString());
+            Logging.Handler.Debug("/admin/files", "hasApiKey", hasApiKey.ToString());
 
-            if (hasApiKey == false)
+            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
             }
-            else
-            {
-                bool api_key_valid = await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key);
 
-                if (api_key_valid == false)
-                {
-                    context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("Unauthorized.");
-                    return;
-                }
+            // Combine the base path with the requested path
+            var fullPath = Path.Combine(Application_Paths._private_files_admin, path);
+
+            // Ensure the path exists and is a directory
+            if (!Directory.Exists(fullPath))
+            {
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync("Directory not found.");
+                return;
             }
 
-            // Get folders and files in the directory and return them as JSON array
-            var directoryTree = NetLock_RMM_Server.Helper.IO.BuildDirectoryTree(Application_Paths._private_files_admin);
+            // Get folders and files in the directory
+            var directoryTree = NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree.Result));
         }
         catch (Exception ex)
         {
-            Logging.Handler.Error("/private/downloads/netlock", "General error", ex.Message);
+            Logging.Handler.Error("/private/downloads/netlock", "General error", ex.ToString());
 
             context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("An error occurred while downloading the file.");
+            await context.Response.WriteAsync("An error occurred while processing the request.");
         }
     }).WithName("private_download_netlock_index").WithOpenApi();
+
 }
 
 // NetLock files download private - GUID, used for update server & trust server
@@ -1003,8 +1026,6 @@ if (role_update || role_trust)
             var fileName = (string)context.Request.RouteValues["fileName"];
 
             var downloadPath = Path.Combine(Application_Paths._private_downloads_netlock, fileName);
-
-            //var downloadPath = Application_Paths._private_downloads_netlock + "\\" + fileName;
 
             // Verify roles
             if (!role_update)
