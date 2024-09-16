@@ -17,6 +17,7 @@ using LettuceEncrypt;
 using System.Threading;
 using System.IO;
 using NetLock_RMM_Server.Helper;
+using static NetLock_Server.SignalR.CommandHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -627,68 +628,6 @@ if (role_comm)
 }).WithName("Swagger5").WithOpenApi();
 */
 
-// File upload public
-/*
-app.MapPost("/public/upload", async context =>
-{
-    try
-    {
-        Logging.Handler.Debug("/public/upload", "Request received.", "");
-
-        // Add headers
-        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
-
-        // Get the remote IP address from the X-Forwarded-For header
-        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
-
-        // Check if the request has a file
-        if (!context.Request.HasFormContentType)
-        {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Invalid request. No file uploaded #1.");
-            return;
-        }
-
-        var form = await context.Request.ReadFormAsync();
-        var file = form.Files.FirstOrDefault();
-        if (file == null || file.Length == 0)
-        {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Invalid request. No file uploaded #2.");
-            return;
-        }
-
-        // Set the upload path
-        var uploadPath = Application_Paths._public_uploads_user;
-
-        Logging.Handler.Debug("/public/upload", "uploadPath", uploadPath);
-
-        // Ensure the upload directory exists
-        if (!Directory.Exists(uploadPath))
-            Directory.CreateDirectory(uploadPath);
-
-        // Save the file
-        var filePath = Path.Combine(uploadPath, file.FileName);
-        Logging.Handler.Debug("/public/upload", "filePath", filePath);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        context.Response.StatusCode = 200;
-        await context.Response.WriteAsync("0"); // success
-    }
-    catch (Exception ex)
-    {
-        Logging.Handler.Error("/public/upload", "General error", ex.Message);
-
-        context.Response.StatusCode = 500;
-        await context.Response.WriteAsync("1"); // something went wrong
-    }
-}).WithName("public_upload").WithOpenApi();
-*/
-
 if (role_file)
 {
     // File download public
@@ -730,69 +669,156 @@ if (role_file)
     }).WithName("public_download").WithOpenApi();
 }
 
-// File upload private - admin, will be use in later development
+// NetLock admin files, get index
 if (role_file)
 {
-    app.MapPost("/private/upload/remote/temp", async context =>
+    app.MapPost("/admin/files/index/{path}", async (HttpContext context, string path) =>
     {
         try
         {
-            Logging.Handler.Debug("/private/upload", "Request received.", "");
-
-            // Add headers
-            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
-
-            // Get the remote IP address from the X-Forwarded-For header
-            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
-
-            // Verify package guid
-            bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
-
-            if (hasPackageGuid == false)
+            // Prüfen, ob der Pfad null oder leer ist
+            if (String.IsNullOrWhiteSpace(path))
             {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized.");
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Invalid request.");
                 return;
+            }
+
+            // Behandle den speziellen Basispfad
+            if (path.Equals("base1337", StringComparison.OrdinalIgnoreCase))
+            {
+                path = String.Empty;
             }
             else
             {
-                bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+                // URL-dekodieren und mögliche unerlaubte Zeichen entfernen
+                path = Uri.UnescapeDataString(path);
 
-                if (package_guid_status == false)
+                // Verhindere Path-Traversal-Attacken durch Normalisierung des Pfades
+                path = Path.GetFullPath(Path.Combine(Application_Paths._private_files_admin, path));
+
+                if (!path.StartsWith(Application_Paths._private_files_admin))
                 {
-                    context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("Unauthorized.");
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsync("Invalid path.");
                     return;
                 }
             }
 
-            // Check authorization
-            bool hasAdminUsername = context.Request.Headers.TryGetValue("username", out StringValues admin_username);
-            bool hasAdminPassword = context.Request.Headers.TryGetValue("password", out StringValues admin_password);
-            Logging.Handler.Debug("/private/upload", "hasAdminUsername", hasAdminUsername.ToString());
-            Logging.Handler.Debug("/private/upload", "hasAdminPassword", hasAdminPassword.ToString());
+            Logging.Handler.Debug("/admin/files", "Request received.", path);
 
+            // Sicherheitsheader hinzufügen
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
 
-            if (!hasAdminUsername || !hasAdminPassword)
+            // Externe IP-Adresse ermitteln (sofern verfügbar)
+            string ipAddressExternal = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue)
+                ? headerValue.ToString()
+                : context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+
+            // API-Schlüssel verifizieren
+            if (!context.Request.Headers.TryGetValue("x-api-key", out StringValues apiKey) ||
+                !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(apiKey))
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
             }
 
-            // Verify admin identity
-            bool adminIdentityStatus = await Authentification.Verify_Admin(admin_username, admin_password);
+            // Verzeichnis prüfen
+            var fullPath = Path.Combine(Application_Paths._private_files_admin, path);
 
-            if (!adminIdentityStatus)
+            if (!Directory.Exists(fullPath))
             {
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync("Directory not found.");
+                return;
+            }
+
+            // Verzeichnisinhalt abrufen
+            var directoryTree = await NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
+
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree));
+        }
+        catch (Exception ex)
+        {
+            Logging.Handler.Error("/admin/files/index", "General error", ex.ToString());
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("An error occurred while processing the request.");
+        }
+    });
+}
+
+// NetLock admin files command
+if (role_file)
+{
+    app.MapPost("/admin/files", async context =>
+    {
+        try
+        {
+            Logging.Handler.Debug("/admin/files/upload", "Request received.", "");
+
+            // Add security headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
+
+            // Verify API key
+            bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
+            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
+            {
+                Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
             }
 
-            // Check if the request has a file
+            // Deserializing the JSON data (command, path)
+            string json;
+
+            using (StreamReader reader = new StreamReader(context.Request.Body))
+            {
+                json = await reader.ReadToEndAsync() ?? string.Empty;
+            }
+
+            await NetLock_RMM_Server.Files.Handler.Command(json);
+
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsync("executed");
+        }
+        catch (Exception ex)
+        {
+            Logging.Handler.Error("/admin/files/upload", "General error", ex.ToString());
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("1"); // something went wrong
+        }
+    });
+}
+
+// NetLock admin files, upload
+if (role_file)
+{
+    app.MapPost("/admin/files/upload/{path}", async (HttpContext context, string path) =>
+    {
+        try
+        {
+            Logging.Handler.Debug("/admin/files/upload", "Request received.", "");
+
+            // Add security headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
+
+            // Verify API key
+            bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
+            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
+            {
+                Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+
+            // Check if the request contains a file
             if (!context.Request.HasFormContentType)
             {
+                Logging.Handler.Debug("/admin/files/upload", "Invalid request: No form content type.", "");
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync("Invalid request. No file uploaded #1.");
                 return;
@@ -802,129 +828,9 @@ if (role_file)
             var file = form.Files.FirstOrDefault();
             if (file == null || file.Length == 0)
             {
+                Logging.Handler.Debug("/admin/files/upload", "Invalid request: No file found in the form.", "");
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync("Invalid request. No file uploaded #2.");
-                return;
-            }
-
-            // Set the upload path
-            var uploadPath = Application_Paths._private_uploads_remote_temp;
-
-            Logging.Handler.Debug("/private/upload", "uploadPath", uploadPath);
-
-            // Ensure the upload directory exists
-            if (!Directory.Exists(uploadPath))
-                Directory.CreateDirectory(uploadPath);
-
-            // Delete existing file
-            var existingFile = Path.Combine(uploadPath, file.FileName);
-            if (File.Exists(existingFile))
-                File.Delete(existingFile);
-
-            // Save the file
-            var filePath = Path.Combine(uploadPath, file.FileName);
-            Logging.Handler.Debug("/private/upload", "filePath", filePath);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            context.Response.StatusCode = 200;
-            await context.Response.WriteAsync("0"); // success
-        }
-        catch (Exception ex)
-        {
-            Logging.Handler.Error("/private/upload", "General error", ex.Message);
-
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("1"); // something went wrong
-        }
-    }).WithName("private_upload").WithOpenApi();
-}
-
-if (role_file)
-{
-    // File download private - admin, will be use in later development
-    app.MapGet("/private/downloads/remote/temp/{fileName}", async context =>
-    {
-        try
-        {
-            Logging.Handler.Debug("private/downloads/", "Request received.", "");
-
-            // Add headers
-            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
-
-            // Get the remote IP address from the X-Forwarded-For header
-            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
-
-            // Check authorization
-            bool hasAdminUsername = context.Request.Headers.TryGetValue("username", out StringValues admin_username);
-            bool hasAdminPassword = context.Request.Headers.TryGetValue("password", out StringValues admin_password);
-            Logging.Handler.Debug("/private/upload", "hasAdminUsername", hasAdminUsername.ToString());
-            Logging.Handler.Debug("/private/upload", "hasAdminPassword", hasAdminPassword.ToString());
-
-            if (!hasAdminUsername || !hasAdminPassword)
-            {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized.");
-                return;
-            }
-
-            // Verify admin identity
-            bool adminIdentityStatus = await Authentification.Verify_Admin(admin_username, admin_password);
-
-            if (!adminIdentityStatus)
-            {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized.");
-                return;
-            }
-
-            var fileName = (string)context.Request.RouteValues["fileName"];
-            var downloadPath = Application_Paths._private_downloads_remote_temp + "\\" + fileName;
-
-            if (!File.Exists(downloadPath))
-            {
-                Logging.Handler.Error("GET Request Mapping", "/public_download", "File not found: " + downloadPath);
-                context.Response.StatusCode = 404;
-                await context.Response.WriteAsync("File not found.");
-                return;
-            }
-
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(downloadPath, FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
-
-            context.Response.ContentType = "application/octet-stream";
-            context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
-            await memory.CopyToAsync(context.Response.Body);
-        }
-        catch (Exception ex)
-        {
-            Logging.Handler.Error("GET Request Mapping", "/public_download", ex.ToString());
-
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("An error occurred while downloading the file.");
-        }
-    }).WithName("private_download").WithOpenApi();
-}
-
-// NetLock private support files, get index
-if (role_file)
-{
-    app.MapPost("/admin/files/index/{path}", async (HttpContext context, string path) =>
-    {
-        try
-        {
-            // Check if path is empty
-            if (string.IsNullOrEmpty(path))
-            {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsync("Invalid request.");
                 return;
             }
 
@@ -939,148 +845,58 @@ if (role_file)
                 path = Uri.UnescapeDataString(path);
             }
 
-            Logging.Handler.Debug("/admin/files", "Request received.", path);
+            // Sanitize the path to prevent directory traversal attacks
+            string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files_admin, path))
+                .Replace('\\', '/').Trim();
 
-            // Add headers
-            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+            string allowedPath = Application_Paths._private_files_admin.Replace('\\', '/').Trim();
 
-            // Get the remote IP address from the X-Forwarded-For header
-            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue)
-                ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+            Logging.Handler.Debug("/admin/files/upload", "Allowed Path", Application_Paths._private_files_admin);
+            Logging.Handler.Debug("/admin/files/upload", "Allowed Path", allowedPath);
+            Logging.Handler.Debug("/admin/files/upload", "Sanitized Path", safePath);
 
-            // Verify API key
-            bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
-
-            Logging.Handler.Debug("/admin/files", "hasApiKey", hasApiKey.ToString());
-
-            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
+            // Ensure the upload path is within the allowed directory
+            if (!safePath.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
             {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized.");
+                Logging.Handler.Debug("/admin/files/upload", "Invalid path: Outside allowed directory.", "");
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync("Invalid path.");
                 return;
             }
 
-            // Combine the base path with the requested path
-            var fullPath = Path.Combine(Application_Paths._private_files_admin, path);
-
-            // Ensure the path exists and is a directory
-            if (!Directory.Exists(fullPath))
+            // Ensure the upload directory exists
+            if (!Directory.Exists(safePath))
             {
-                context.Response.StatusCode = 404;
-                await context.Response.WriteAsync("Directory not found.");
-                return;
+                Logging.Handler.Debug("/admin/files/upload", "Creating directory: " + safePath, "");
+                Directory.CreateDirectory(safePath);
             }
 
-            // Get folders and files in the directory
-            var directoryTree = NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
+            Logging.Handler.Debug("/admin/files/upload", "Uploading file: " + file.FileName, "");
 
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree.Result));
+            // Set the file path
+            var filePath = Path.Combine(safePath, file.FileName);
+            Logging.Handler.Debug("/admin/files/upload", "File Path", filePath);
+
+            // Save the file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            Logging.Handler.Debug("/admin/files/upload", "File uploaded successfully: " + file.FileName, "");
+
+            await NetLock_RMM_Server.Files.Handler.Register_File(filePath);
+
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsync("uploaded");
         }
         catch (Exception ex)
         {
-            Logging.Handler.Error("/private/downloads/netlock", "General error", ex.ToString());
-
+            Logging.Handler.Error("/admin/files/upload", "General error", ex.ToString());
             context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("An error occurred while processing the request.");
+            await context.Response.WriteAsync("1"); // something went wrong
         }
-    }).WithName("private_download_netlock_index").WithOpenApi();
-}
-
-// NetLock private support files, get index
-if (role_file)
-{
-    // NetLock private support files, get index
-    if (role_file)
-    {
-        app.MapPost("/admin/files/upload/{path}", async (HttpContext context, string path) =>
-        {
-            try
-            {
-                Logging.Handler.Debug("/admin/files/upload", "Request received.", "");
-
-                // Add security headers
-                context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
-
-                // Verify API key
-                bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
-                if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
-                {
-                    Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
-                    context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("Unauthorized.");
-                    return;
-                }
-
-                // Check if the request contains a file
-                if (!context.Request.HasFormContentType)
-                {
-                    Logging.Handler.Debug("/admin/files/upload", "Invalid request: No form content type.", "");
-                    context.Response.StatusCode = 400;
-                    await context.Response.WriteAsync("Invalid request. No file uploaded #1.");
-                    return;
-                }
-
-                var form = await context.Request.ReadFormAsync();
-                var file = form.Files.FirstOrDefault();
-                if (file == null || file.Length == 0)
-                {
-                    Logging.Handler.Debug("/admin/files/upload", "Invalid request: No file found in the form.", "");
-                    context.Response.StatusCode = 400;
-                    await context.Response.WriteAsync("Invalid request. No file uploaded #2.");
-                    return;
-                }
-
-                // Sanitize the path to prevent directory traversal attacks
-                string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files_admin, path))
-                    .Replace('\\', '/').Trim();
-
-                string allowedPath = Application_Paths._private_files_admin.Replace('\\', '/').Trim();
-
-                Logging.Handler.Debug("/admin/files/upload", "Allowed Path", Application_Paths._private_files_admin);
-                Logging.Handler.Debug("/admin/files/upload", "Allowed Path", allowedPath);
-                Logging.Handler.Debug("/admin/files/upload", "Sanitized Path", safePath);
-
-                // Ensure the upload path is within the allowed directory
-                if (!safePath.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logging.Handler.Debug("/admin/files/upload", "Invalid path: Outside allowed directory.", "");
-                    context.Response.StatusCode = 400;
-                    await context.Response.WriteAsync("Invalid path.");
-                    return;
-                }
-
-                // Ensure the upload directory exists
-                if (!Directory.Exists(safePath))
-                {
-                    Logging.Handler.Debug("/admin/files/upload", "Creating directory: " + safePath, "");
-                    Directory.CreateDirectory(safePath);
-                }
-
-                Logging.Handler.Debug("/admin/files/upload", "Uploading file: " + file.FileName, "");
-
-                // Set the file path
-                var filePath = Path.Combine(safePath, file.FileName);
-                Logging.Handler.Debug("/admin/files/upload", "File Path", filePath);
-
-                // Save the file
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                Logging.Handler.Debug("/admin/files/upload", "File uploaded successfully: " + file.FileName, "");
-                context.Response.StatusCode = 200;
-                await context.Response.WriteAsync("uploaded");
-            }
-            catch (Exception ex)
-            {
-                Logging.Handler.Error("/admin/files/upload", "General error", ex.ToString());
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("1"); // something went wrong
-            }
-        });
-    }
+    });
 }
 
 // NetLock files download private - GUID, used for update server & trust server
