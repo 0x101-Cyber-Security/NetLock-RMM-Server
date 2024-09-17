@@ -914,7 +914,7 @@ if (role_file)
 // NetLock admin files, download
 if (role_file)
 {
-    app.MapPost("/admin/files/download/{guid}", async (HttpContext context, string guid) =>
+    app.MapGet("/admin/files/download/{guid}/{password?}", async (HttpContext context, string guid, string? password) =>
     {
         try
         {
@@ -923,20 +923,16 @@ if (role_file)
             // Add security headers
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
 
-            // Verify API key
+            // Get api key
             bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
-            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
-            {
-                Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Unauthorized.");
-                return;
-            }
 
-            // Check access
+            // Get guid
             guid = Uri.UnescapeDataString(guid);
 
-            bool hasAccess = await NetLock_RMM_Server.Files.Handler.Verify_File_Access(guid, files_api_key);
+            // Handle the case when password is null or empty
+            password = password != null ? Uri.UnescapeDataString(password) : string.Empty;
+
+            bool hasAccess = await NetLock_RMM_Server.Files.Handler.Verify_File_Access(guid, password, files_api_key);
 
             if (!hasAccess)
             {
@@ -946,10 +942,12 @@ if (role_file)
             }
 
             string file_path = await NetLock_RMM_Server.Files.Handler.Get_File_Path_By_GUID(guid);
-            string file_name = Path.GetFileName(file_path);
+            string server_path = Path.Combine(Application_Paths._private_files_admin_db_friendly, file_path);
+
+            string file_name = Path.GetFileName(server_path);
 
             var memory = new MemoryStream();
-            using (var stream = new FileStream(file_path, FileMode.Open))
+            using (var stream = new FileStream(server_path, FileMode.Open))
             {
                 await stream.CopyToAsync(memory);
             }

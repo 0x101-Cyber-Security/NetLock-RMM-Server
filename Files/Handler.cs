@@ -17,6 +17,7 @@ namespace NetLock_RMM_Server.Files
         public string? command { get; set; }
         public string? path { get; set; }
         public string? name { get; set; }
+        public string? guid { get; set; }
     }
 
     public class Download_JSON
@@ -79,7 +80,7 @@ namespace NetLock_RMM_Server.Files
                 // Read file info
                 string name = Path.GetFileName(file_path);
                 string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                path = Regex.Replace(path, @"^.*?(?=admin)", "");
                 string sha512 = await Helper.IO.Get_SHA512(file_path);
                 string guid = Guid.NewGuid().ToString();
                 string access = "Private";
@@ -114,12 +115,12 @@ namespace NetLock_RMM_Server.Files
                     if (fileExists)
                     {
                         // Update file
-                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, access = @access, date = @date WHERE path = @path;";
+                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE path = @path;";
                     }
                     else
                     {
                         // Insert file
-                        query = "INSERT INTO files (name, path, sha512, guid, access, date) VALUES (@name, @path, @sha512, @guid, @access, @date);";
+                        query = "INSERT INTO files (name, path, sha512, guid, password, access, date) VALUES (@name, @path, @sha512, @guid, @password, @access, @date);";
                     }
 
                     cmd = new MySqlCommand(query, conn);
@@ -127,6 +128,7 @@ namespace NetLock_RMM_Server.Files
                     cmd.Parameters.AddWithValue("@path", path);
                     cmd.Parameters.AddWithValue("@sha512", sha512);
                     cmd.Parameters.AddWithValue("@guid", guid);
+                    cmd.Parameters.AddWithValue("@password", Guid.NewGuid().ToString());
                     cmd.Parameters.AddWithValue("@access", access);
                     cmd.Parameters.AddWithValue("@date", DateTime.Now);
 
@@ -156,7 +158,7 @@ namespace NetLock_RMM_Server.Files
                 // Read file info
                 string name = Path.GetFileName(file_path);
                 string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                path = Regex.Replace(path, @"^.*?(?=admin)", "");
 
                 MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
 
@@ -230,12 +232,38 @@ namespace NetLock_RMM_Server.Files
                 }
                 else if (command.command == "rename")
                 {
-                    string newPath = Path.Combine(Path.GetDirectoryName(command.path), command.name);
+                    string oldPath = Path.GetDirectoryName(command.path);
+                    string newPath = Path.Combine(oldPath, command.name);
 
                     if (File.Exists(command.path))
                     {
                         // Rename file
                         File.Move(command.path, newPath);
+
+                        // Update the path and name in the DB
+                        MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+
+                        try
+                        {
+                            await conn.OpenAsync();
+
+                            string query = "UPDATE files SET name = @name WHERE guid = @guid;";
+                            MySqlCommand cmd = new MySqlCommand(query, conn);
+                            cmd.Parameters.AddWithValue("@guid", command.guid);
+                            cmd.Parameters.AddWithValue("@name", command.name);
+
+                            Logging.Handler.Debug("Files.Command", "MySQL_Prepared_Query", query);
+
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logging.Handler.Error("Files.Command", "MySQL_Query", ex.ToString());
+                        }
+                        finally
+                        {
+                            await conn.CloseAsync();
+                        }
                     }
                     else if (Directory.Exists(command.path))
                     {
@@ -278,7 +306,7 @@ namespace NetLock_RMM_Server.Files
         }
 
         // Download file
-        public static async Task<bool> Verify_File_Access(string guid, string api_key)
+        public static async Task<bool> Verify_File_Access(string guid, string password, string api_key)
         {
             bool access_granted = false;
 
@@ -317,6 +345,12 @@ namespace NetLock_RMM_Server.Files
                                     access_granted = true;
                                 else
                                     access_granted = false;
+
+                                // Check if the password is valid
+                                if (password == reader.GetString(reader.GetOrdinal("password")))
+                                    access_granted = true;
+                                else
+                                    access_granted = false;
                             }
                         }
                         else
@@ -346,21 +380,8 @@ namespace NetLock_RMM_Server.Files
         }
 
         // Get file path by GUID
-        public static async Task<string> Get_File_Path_By_GUID(string json)
+        public static async Task<string> Get_File_Path_By_GUID(string guid)
         {
-            string guid = String.Empty;
-
-            // Deserialize JSON
-            try
-            {
-                Download_JSON download = JsonSerializer.Deserialize<Download_JSON>(json);
-                guid = download.guid;
-            }
-            catch (Exception ex)
-            {
-                Logging.Handler.Error("Files.Get_File_Path_By_GUID", "json_deserialize", ex.ToString());
-            }
-
             string file_path = String.Empty;
 
             try

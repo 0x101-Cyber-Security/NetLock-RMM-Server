@@ -17,6 +17,7 @@ namespace NetLock_Server
         public static string _private_downloads_remote_temp = Path.Combine(GetCurrentDirectory(), "www", "private", "downloads", "remote", "temp");
 
         public static string _private_files_admin = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "admin");
+        public static string _private_files_admin_db_friendly = Path.Combine(GetCurrentDirectory(), "www", "private", "files");
 
         // URLs
         public static string redirect_path = "/";

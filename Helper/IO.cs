@@ -17,6 +17,7 @@ namespace NetLock_RMM_Server.Helper
             public DateTime last_modified { get; set; }
             public string sha512 { get; set; }
             public string guid { get; set; }
+            public string password { get; set; }
             public string access { get; set; }
         }
 
@@ -54,9 +55,10 @@ namespace NetLock_RMM_Server.Helper
                     // file details
                     string sha512 = String.Empty;
                     string guid = String.Empty;
+                    string password = String.Empty;
                     string access = String.Empty;
 
-                    string db_path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                    string db_path = Regex.Replace(path, @"^.*?(?=admin)", "");
 
                     string query = "SELECT * FROM files WHERE name = @name AND path = @path;";
 
@@ -72,6 +74,7 @@ namespace NetLock_RMM_Server.Helper
                             {
                                 sha512 = reader["sha512"].ToString();
                                 guid = reader["guid"].ToString();
+                                password = reader["password"].ToString();
                                 access = reader["access"].ToString();
                             }
                         }
@@ -86,6 +89,7 @@ namespace NetLock_RMM_Server.Helper
                         type = file.Extension,
                         sha512 = sha512,
                         guid = guid,
+                        password = password,
                         access = access
                     };
 
