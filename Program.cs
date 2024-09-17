@@ -18,6 +18,7 @@ using System.Threading;
 using System.IO;
 using NetLock_RMM_Server.Helper;
 using static NetLock_Server.SignalR.CommandHub;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -737,8 +738,19 @@ if (role_file)
             // Verzeichnisinhalt abrufen
             var directoryTree = await NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
 
+            //  Create json (directoryTree) & Application_Paths._private_files_admin
+            var jsonObject = new
+            {
+                index = directoryTree,
+                server_path = Application_Paths._private_files_admin
+            };
+
+            // Convert the object into a JSON string
+            string json = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
+            Logging.Handler.Debug("Online_Mode.Handler.Update_Device_Information", "json", json);
+
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(directoryTree));
+            await context.Response.WriteAsync(json);
         }
         catch (Exception ex)
         {
@@ -752,7 +764,7 @@ if (role_file)
 // NetLock admin files command
 if (role_file)
 {
-    app.MapPost("/admin/files", async context =>
+    app.MapPost("/admin/files/command", async context =>
     {
         try
         {
@@ -889,6 +901,64 @@ if (role_file)
 
             context.Response.StatusCode = 200;
             await context.Response.WriteAsync("uploaded");
+        }
+        catch (Exception ex)
+        {
+            Logging.Handler.Error("/admin/files/upload", "General error", ex.ToString());
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("1"); // something went wrong
+        }
+    });
+}
+
+// NetLock admin files, download
+if (role_file)
+{
+    app.MapPost("/admin/files/download/{guid}", async (HttpContext context, string guid) =>
+    {
+        try
+        {
+            Logging.Handler.Debug("/admin/files/upload", "Request received.", "");
+
+            // Add security headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
+
+            // Verify API key
+            bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
+            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
+            {
+                Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+
+            // Check access
+            guid = Uri.UnescapeDataString(guid);
+
+            bool hasAccess = await NetLock_RMM_Server.Files.Handler.Verify_File_Access(guid, files_api_key);
+
+            if (!hasAccess)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+
+            string file_path = await NetLock_RMM_Server.Files.Handler.Get_File_Path_By_GUID(guid);
+            string file_name = Path.GetFileName(file_path);
+
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(file_path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "application/octet-stream";
+            context.Response.Headers.Add("Content-Disposition", $"attachment; filename={file_name}");
+            await memory.CopyToAsync(context.Response.Body);
         }
         catch (Exception ex)
         {
