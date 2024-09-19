@@ -73,14 +73,23 @@ namespace NetLock_RMM_Server.Files
             }
         }
 
-        public static async Task Register_File(string file_path)
+        public static async Task Register_File(string file_path, string directory_path)
         {
             try
             {
-                // Read file info
+                // Ensure the file_path is relative to _private_files_admin
+                string relativePath = Path.GetRelativePath(Application_Paths._private_files, file_path);
+
+                // Extract file information
                 string name = Path.GetFileName(file_path);
-                string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=admin)", "");
+                string path = Path.GetRelativePath(Application_Paths._private_files, directory_path); // Use the directory path
+
+                // If the path equals base directory, set it to an empty string
+                if (string.IsNullOrEmpty(path) || path == ".")
+                {
+                    path = string.Empty;
+                }
+
                 string sha512 = await Helper.IO.Get_SHA512(file_path);
                 string guid = Guid.NewGuid().ToString();
                 string access = "Private";
@@ -97,7 +106,7 @@ namespace NetLock_RMM_Server.Files
                 {
                     await conn.OpenAsync();
 
-                    // Check if already exists, if so, do update instead of insert.
+                    // Check if the file already exists
                     string query = "SELECT * FROM files WHERE name = @name AND path = @path;";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@name", name);
@@ -115,7 +124,7 @@ namespace NetLock_RMM_Server.Files
                     if (fileExists)
                     {
                         // Update file
-                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE path = @path;";
+                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE name = @name AND path = @path;";
                     }
                     else
                     {
@@ -151,14 +160,13 @@ namespace NetLock_RMM_Server.Files
             }
         }
 
-        private static async Task Unregister_File(string file_path)
+
+
+        private static async Task Unregister_File(string guid)
         {
             try
             {
-                // Read file info
-                string name = Path.GetFileName(file_path);
-                string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=admin)", "");
+                Console.WriteLine("Unregistering file with GUID: " + guid);
 
                 MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
 
@@ -166,10 +174,9 @@ namespace NetLock_RMM_Server.Files
                 {
                     await conn.OpenAsync();
 
-                    string query = "DELETE FROM files WHERE name = @name AND path = @path;";
+                    string query = "DELETE FROM files WHERE guid = @guid;";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@name", name);
-                    cmd.Parameters.AddWithValue("@path", path);
+                    cmd.Parameters.AddWithValue("@guid", guid);
 
                     Logging.Handler.Debug("Files.Unregister_File", "MySQL_Prepared_Query", query);
 
@@ -202,19 +209,34 @@ namespace NetLock_RMM_Server.Files
                 Logging.Handler.Debug("Files.Command", "command", command.command);
                 Logging.Handler.Debug("Files.Command", "path", command.path);
                 Logging.Handler.Debug("Files.Command", "name", command.name);
+                Logging.Handler.Debug("Files.Command", "guid", command.guid);
 
-                // Check if path contains base1337, cut the base1337 part out and replace it with the actual path
-                if (command.path.Contains("base1337"))
-                    command.path = command.path.Replace("base1337", Application_Paths._private_files_admin);
+                // Normalize the path based on the base path
+                string normalizedPath = command.path;
+
+                // Replace "base1337" with the actual base path if needed
+                if (normalizedPath.Contains("base1337"))
+                {
+                    normalizedPath = normalizedPath.Replace("base1337", Application_Paths._private_files);
+                }
+
+                // Sanitize and get the full path
+                string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files, normalizedPath))
+                    .Replace('\\', '/').TrimEnd('/');
+
+                // Remove the base path for storage or processing
+                string relativePath = safePath.Replace(Application_Paths._private_files.Replace('\\', '/'), string.Empty).TrimStart('/');
 
                 if (command.command == "create_directory")
                 {
-                    if (!Directory.Exists(command.path))
-                        Directory.CreateDirectory(command.path);
+                    if (!Directory.Exists(safePath))
+                        Directory.CreateDirectory(safePath);
                 }
                 else if (command.command == "delete_directory")
                 {
-                    DirectoryInfo di = new DirectoryInfo(command.path);
+                    Console.WriteLine("Deleting directory with GUID: " + command.guid);
+                    Console.WriteLine("Safe path: " + safePath);
+                    DirectoryInfo di = new DirectoryInfo(safePath);
 
                     // Recursively delete files and directories if the directory exists
                     if (di.Exists)
@@ -224,59 +246,61 @@ namespace NetLock_RMM_Server.Files
                 }
                 else if (command.command == "delete_file")
                 {
-                    if (File.Exists(command.path))
+                    Console.WriteLine("Deleting file with GUID: " + command.guid);
+                    Console.WriteLine("Safe path: " + Path.Combine(safePath, command.name));
+
+                    if (File.Exists(Path.Combine(safePath, command.name))) 
                     {
-                        await Unregister_File(command.path); // Remove the file from the DB
-                        File.Delete(command.path);
+                        await Unregister_File(command.guid); // Remove the file from the DB
+                        File.Delete(Path.Combine(safePath, command.name));
                     }
                 }
                 else if (command.command == "rename")
                 {
-                    string oldPath = Path.GetDirectoryName(command.path);
+                    string oldPath = Path.GetDirectoryName(safePath);
                     string newPath = Path.Combine(oldPath, command.name);
 
-                    if (File.Exists(command.path))
+                    if (File.Exists(safePath))
                     {
                         // Rename file
-                        File.Move(command.path, newPath);
+                        File.Move(safePath, newPath);
 
                         // Update the path and name in the DB
-                        MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
-
-                        try
+                        using (MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String()))
                         {
-                            await conn.OpenAsync();
+                            try
+                            {
+                                await conn.OpenAsync();
 
-                            string query = "UPDATE files SET name = @name WHERE guid = @guid;";
-                            MySqlCommand cmd = new MySqlCommand(query, conn);
-                            cmd.Parameters.AddWithValue("@guid", command.guid);
-                            cmd.Parameters.AddWithValue("@name", command.name);
+                                string query = "UPDATE files SET name = @name, path = @path WHERE guid = @guid;";
+                                MySqlCommand cmd = new MySqlCommand(query, conn);
+                                cmd.Parameters.AddWithValue("@guid", command.guid);
+                                cmd.Parameters.AddWithValue("@name", command.name);
+                                cmd.Parameters.AddWithValue("@path", relativePath);
 
-                            Logging.Handler.Debug("Files.Command", "MySQL_Prepared_Query", query);
+                                Logging.Handler.Debug("Files.Command", "MySQL_Prepared_Query", query);
 
-                            await cmd.ExecuteNonQueryAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logging.Handler.Error("Files.Command", "MySQL_Query", ex.ToString());
-                        }
-                        finally
-                        {
-                            await conn.CloseAsync();
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logging.Handler.Error("Files.Command", "MySQL_Query", ex.ToString());
+                            }
                         }
                     }
-                    else if (Directory.Exists(command.path))
+                    else if (Directory.Exists(safePath))
                     {
                         // Rename directory
-                        Directory.Move(command.path, newPath);
+                        Directory.Move(safePath, newPath);
                     }
                 }
-            }            
+            }
             catch (Exception ex)
             {
                 Logging.Handler.Error("Files.Command", "general_error", ex.ToString());
             }
         }
+
 
         // Recursive method for deleting files and directories
         private static async Task DeleteDirectoryRecursively(DirectoryInfo directory)

@@ -696,9 +696,9 @@ if (role_file)
                 path = Uri.UnescapeDataString(path);
 
                 // Verhindere Path-Traversal-Attacken durch Normalisierung des Pfades
-                path = Path.GetFullPath(Path.Combine(Application_Paths._private_files_admin, path));
+                path = Path.GetFullPath(Path.Combine(Application_Paths._private_files, path));
 
-                if (!path.StartsWith(Application_Paths._private_files_admin))
+                if (!path.StartsWith(Application_Paths._private_files))
                 {
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync("Invalid path.");
@@ -726,7 +726,7 @@ if (role_file)
             }
 
             // Verzeichnis prüfen
-            var fullPath = Path.Combine(Application_Paths._private_files_admin, path);
+            var fullPath = Path.Combine(Application_Paths._private_files, path);
 
             if (!Directory.Exists(fullPath))
             {
@@ -738,11 +738,11 @@ if (role_file)
             // Verzeichnisinhalt abrufen
             var directoryTree = await NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
 
-            //  Create json (directoryTree) & Application_Paths._private_files_admin
+            //  Create json (directoryTree) & Application_Paths._private_files
             var jsonObject = new
             {
                 index = directoryTree,
-                server_path = Application_Paths._private_files_admin
+                server_path = Application_Paths._private_files
             };
 
             // Convert the object into a JSON string
@@ -846,28 +846,29 @@ if (role_file)
                 return;
             }
 
-            // Check if base path
+            // Decode the URL-encoded path and sanitize
             if (string.IsNullOrEmpty(path) || path.Equals("base1337", StringComparison.OrdinalIgnoreCase))
             {
-                path = String.Empty;
+                path = string.Empty;
             }
             else
             {
-                // Decode the URL-encoded path
                 path = Uri.UnescapeDataString(path);
             }
 
             // Sanitize the path to prevent directory traversal attacks
-            string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files_admin, path))
-                .Replace('\\', '/').Trim();
+            string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files, path))
+                .Replace('\\', '/').TrimEnd('/');
 
-            string allowedPath = Application_Paths._private_files_admin.Replace('\\', '/').Trim();
+            // Normalize the allowed base path
+            string allowedPath = Path.GetFullPath(Application_Paths._private_files)
+                .Replace('\\', '/').TrimEnd('/');
 
-            Logging.Handler.Debug("/admin/files/upload", "Allowed Path", Application_Paths._private_files_admin);
+            // Log for debugging
             Logging.Handler.Debug("/admin/files/upload", "Allowed Path", allowedPath);
             Logging.Handler.Debug("/admin/files/upload", "Sanitized Path", safePath);
 
-            // Ensure the upload path is within the allowed directory
+            // Check if the sanitized path starts with the allowed base path
             if (!safePath.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
             {
                 Logging.Handler.Debug("/admin/files/upload", "Invalid path: Outside allowed directory.", "");
@@ -877,16 +878,17 @@ if (role_file)
             }
 
             // Ensure the upload directory exists
-            if (!Directory.Exists(safePath))
+            string directoryPath = Path.GetDirectoryName(safePath);
+            if (!Directory.Exists(directoryPath))
             {
-                Logging.Handler.Debug("/admin/files/upload", "Creating directory: " + safePath, "");
-                Directory.CreateDirectory(safePath);
+                Logging.Handler.Debug("/admin/files/upload", "Creating directory: " + directoryPath, "");
+                Directory.CreateDirectory(directoryPath);
             }
 
             Logging.Handler.Debug("/admin/files/upload", "Uploading file: " + file.FileName, "");
 
             // Set the file path
-            var filePath = Path.Combine(safePath, file.FileName);
+            var filePath = Path.Combine(directoryPath, file.FileName);
             Logging.Handler.Debug("/admin/files/upload", "File Path", filePath);
 
             // Save the file
@@ -897,7 +899,8 @@ if (role_file)
 
             Logging.Handler.Debug("/admin/files/upload", "File uploaded successfully: " + file.FileName, "");
 
-            await NetLock_RMM_Server.Files.Handler.Register_File(filePath);
+            // Register the file with the correct directory path (excluding file name)
+            await NetLock_RMM_Server.Files.Handler.Register_File(filePath, directoryPath);
 
             context.Response.StatusCode = 200;
             await context.Response.WriteAsync("uploaded");
@@ -910,6 +913,7 @@ if (role_file)
         }
     });
 }
+
 
 // NetLock admin files, download
 if (role_file)
