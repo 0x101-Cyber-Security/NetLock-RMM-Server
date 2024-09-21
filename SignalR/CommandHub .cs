@@ -63,6 +63,7 @@ namespace NetLock_Server.SignalR
             public string file_browser_path { get; set; } 
             public string file_browser_path_move { get; set; } 
             public string file_browser_file_content { get; set; } 
+            public string file_browser_file_guid { get; set; }
         }
          
         public class Root_Entity
@@ -392,6 +393,11 @@ namespace NetLock_Server.SignalR
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameFile", $"Response sent to admin client {admin_client_id}: {response}");
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameFile", response);
+                    }
+                    else if (file_browser_command == 10) // download file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDownloadFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDownloadFile", response);
                     }
                 }
 

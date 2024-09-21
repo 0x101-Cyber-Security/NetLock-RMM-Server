@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using System.Text.Json;
 using System.Diagnostics;
+using System.Security.Principal;
 
 namespace NetLock_RMM_Server.Files
 {
@@ -73,7 +74,7 @@ namespace NetLock_RMM_Server.Files
             }
         }
 
-        public static async Task Register_File(string file_path, string directory_path)
+        public static async Task<string> Register_File (string file_path, string directory_path, string tenant_guid, string location_guid, string device_name)
         {
             try
             {
@@ -92,6 +93,7 @@ namespace NetLock_RMM_Server.Files
 
                 string sha512 = await Helper.IO.Get_SHA512(file_path);
                 string guid = Guid.NewGuid().ToString();
+                string password = Guid.NewGuid().ToString();
                 string access = "Private";
 
                 Logging.Handler.Debug("Files.Register_File", "name", name);
@@ -99,6 +101,26 @@ namespace NetLock_RMM_Server.Files
                 Logging.Handler.Debug("Files.Register_File", "sha512", sha512);
                 Logging.Handler.Debug("Files.Register_File", "guid", guid);
                 Logging.Handler.Debug("Files.Register_File", "access", access);
+                Logging.Handler.Debug("Files.Register_File", "date", DateTime.Now.ToString());
+                Logging.Handler.Debug("Files.Register_File", "tenant_guid", tenant_guid);
+                Logging.Handler.Debug("Files.Register_File", "location_guid", location_guid);
+                Logging.Handler.Debug("Files.Register_File", "device_name", device_name);
+
+                // Get the tenant id & location id with tenant_guid & location_guid
+                (int tenant_id, int location_id) = await NetLock_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+
+                // Get device ID
+                int device_id = await NetLock_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+
+                //  Create the JSON object
+                var jsonObject = new
+                {
+                    guid = guid,
+                };
+
+                // Convert the object into a JSON string
+                string register_json = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
+                Logging.Handler.Debug("Files.Register_File", "info_json ", register_json);
 
                 MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
 
@@ -124,12 +146,12 @@ namespace NetLock_RMM_Server.Files
                     if (fileExists)
                     {
                         // Update file
-                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE name = @name AND path = @path;";
+                        query = "UPDATE files SET device_id = @device_id, name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE name = @name AND path = @path;";
                     }
                     else
                     {
                         // Insert file
-                        query = "INSERT INTO files (name, path, sha512, guid, password, access, date) VALUES (@name, @path, @sha512, @guid, @password, @access, @date);";
+                        query = "INSERT INTO files (device_id, name, path, sha512, guid, password, access, date) VALUES (@device_id, @name, @path, @sha512, @guid, @password, @access, @date);";
                     }
 
                     cmd = new MySqlCommand(query, conn);
@@ -137,9 +159,10 @@ namespace NetLock_RMM_Server.Files
                     cmd.Parameters.AddWithValue("@path", path);
                     cmd.Parameters.AddWithValue("@sha512", sha512);
                     cmd.Parameters.AddWithValue("@guid", guid);
-                    cmd.Parameters.AddWithValue("@password", Guid.NewGuid().ToString());
+                    cmd.Parameters.AddWithValue("@password", password);
                     cmd.Parameters.AddWithValue("@access", access);
                     cmd.Parameters.AddWithValue("@date", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@device_id", device_id);
 
                     Logging.Handler.Debug("Files.Register_File", "MySQL_Prepared_Query", query);
 
@@ -153,14 +176,15 @@ namespace NetLock_RMM_Server.Files
                 {
                     await conn.CloseAsync();
                 }
+
+                return register_json;
             }
             catch (Exception ex)
             {
                 Logging.Handler.Error("Files.Register_File", "general_error", ex.ToString());
+                return string.Empty;
             }
         }
-
-
 
         private static async Task Unregister_File(string guid)
         {
@@ -326,6 +350,62 @@ namespace NetLock_RMM_Server.Files
             catch (Exception ex)
             {
                 Logging.Handler.Error("Files.DeleteDirectoryRecursively", "general_error", ex.ToString());
+            }
+        }
+
+        // Verify device file access
+        public static async Task<bool> Verify_Device_File_Access(string tenant_guid, string location_guid, string device_name, string guid)
+        {
+            try
+            {
+                // Get the tenant id & location id with tenant_guid & location_guid
+                (int tenant_id, int location_id) = await NetLock_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+
+                // Get device ID
+                int device_id = await NetLock_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+
+                // Check if the device id matches with the file guid
+                MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = "SELECT * FROM files WHERE device_id = @device_id AND guid = @guid;";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@device_id", device_id);
+                    cmd.Parameters.AddWithValue("@guid", guid);
+
+                    Logging.Handler.Debug("Files.Verify_Device_File_Access", "MySQL_Prepared_Query", query);
+
+                    using (DbDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (reader.HasRows)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Handler.Error("Files.Verify_Device_File_Access", "MySQL_Query", ex.ToString());
+                }
+                finally
+                {
+                    conn.Close();
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("Files.Verify_Device_File_Access", "general_error", ex.ToString());
+                return false;
             }
         }
 

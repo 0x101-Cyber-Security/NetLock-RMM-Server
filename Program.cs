@@ -541,7 +541,7 @@ if (role_comm)
         }
         catch (Exception ex)
         {
-            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Policy", ex.Message);
+            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Policy", ex.ToString());
 
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
@@ -812,20 +812,28 @@ if (role_file)
     {
         try
         {
-            Logging.Handler.Debug("/admin/files/upload", "Request received.", "");
+            Logging.Handler.Debug("/admin/files/upload", "Request received.", path);
 
             // Add security headers
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
 
             // Verify API key
             bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
-            if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
+
+            bool ApiKeyValid = await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key);
+
+            if (!hasApiKey || !ApiKeyValid)
             {
                 Logging.Handler.Debug("/admin/files/upload", "Missing or invalid API key.", "");
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
             }
+
+            // Query-String-Parameter extrahieren
+            var tenant_guid = context.Request.Query["tenant_guid"].ToString();
+            var location_guid = context.Request.Query["location_guid"].ToString();
+            var device_name = context.Request.Query["device_name"].ToString();
 
             // Check if the request contains a file
             if (!context.Request.HasFormContentType)
@@ -900,10 +908,20 @@ if (role_file)
             Logging.Handler.Debug("/admin/files/upload", "File uploaded successfully: " + file.FileName, "");
 
             // Register the file with the correct directory path (excluding file name)
-            await NetLock_RMM_Server.Files.Handler.Register_File(filePath, directoryPath);
+            string register_json = await NetLock_RMM_Server.Files.Handler.Register_File(filePath, directoryPath, tenant_guid, location_guid, device_name);
 
             context.Response.StatusCode = 200;
-            await context.Response.WriteAsync("uploaded");
+
+            // Send back info json if api key is valid
+            if (hasApiKey && ApiKeyValid)
+            {
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(register_json);
+            }
+            else // If the api key is invalid, just send a simple response
+            {
+                await context.Response.WriteAsync("uploaded");
+            }
         }
         catch (Exception ex)
         {
@@ -970,6 +988,139 @@ if (role_file)
         }
     });
 }
+
+// NetLock admin files device download
+app.MapGet("/admin/files/download/device", async (HttpContext context) =>
+{
+    try
+    {
+        Console.WriteLine("GET Request Mapping: /admin/files/download/device");
+        Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Request received.");
+
+        // Add headers
+        context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+        // Get the remote IP address from the X-Forwarded-For header
+        string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+        // Verify package guid
+        bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+        Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "hasGuid: " + hasPackageGuid.ToString());
+        Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Package guid: " + package_guid.ToString());
+
+        if (hasPackageGuid == false)
+        {
+            Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "No guid provided. Unauthorized.");
+
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Unauthorized.");
+            return;
+        }
+        else
+        {
+            bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+            Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Package guid status: " + package_guid_status.ToString());
+
+            if (package_guid_status == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+        }
+
+        // Query parameters
+        string guid = context.Request.Query["guid"].ToString();
+        string tenant_guid = context.Request.Query["tenant_guid"].ToString();
+        string location_guid = context.Request.Query["location_guid"].ToString();
+        string device_name = context.Request.Query["device_name"].ToString();
+        string access_key = context.Request.Query["access_key"].ToString();
+        string hwid = context.Request.Query["hwid"].ToString();
+
+        if (string.IsNullOrEmpty(guid) || string.IsNullOrEmpty(tenant_guid) || string.IsNullOrEmpty(location_guid) || string.IsNullOrEmpty(device_name))
+        {
+            Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Invalid request.");
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Invalid request.");
+            return;
+        }
+
+        // Build a device identity JSON object with nested "device_identity" object
+        string device_identity_json = "{ \"device_identity\": { " +
+                                      "\"tenant_guid\": \"" + tenant_guid + "\"," +
+                                      "\"location_guid\": \"" + location_guid + "\"," +
+                                      "\"device_name\": \"" + device_name + "\"," +
+                                      "\"access_key\": \"" + access_key + "\"," +
+                                      "\"hwid\": \"" + hwid + "\"" +
+                                      "} }";
+
+        // Verify the device
+        string device_status = await Authentification.Verify_Device(device_identity_json, ip_address_external);
+
+        Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Device status: " + device_status);
+
+        // Check if the device is authorized, synced, or not synced. If so, get the file from the database
+        if (device_status == "authorized" || device_status == "synced" || device_status == "not_synced")
+        {
+            // Get the file path by GUID
+            bool file_access = await NetLock_RMM_Server.Files.Handler.Verify_Device_File_Access(tenant_guid, location_guid, device_name, guid);
+
+            Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "File access: " + file_access.ToString());
+
+            if (file_access == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+            else
+            {
+                string file_path = await NetLock_RMM_Server.Files.Handler.Get_File_Path_By_GUID(guid);
+                string server_path = Path.Combine(Application_Paths._private_files_admin_db_friendly, file_path);
+
+                Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "Server path: " + server_path);
+
+                if (!File.Exists(server_path))
+                {
+                    Logging.Handler.Debug("/admin/files/download/device", "File not found", server_path);
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("File not found.");
+                    return;
+                }
+
+                string file_name = Path.GetFileName(server_path);
+
+                Logging.Handler.Debug("Get Request Mapping", "/admin/files/download/device", "File name: " + file_name);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(server_path, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "application/octet-stream";
+                context.Response.Headers.Add("Content-Disposition", $"attachment; filename={file_name}");
+                await memory.CopyToAsync(context.Response.Body);
+            }
+        }
+        else // If the device is not authorized, return the device status as unauthorized
+        {
+            context.Response.StatusCode = 403;
+            await context.Response.WriteAsync(device_status);
+        }
+    }
+    catch (Exception ex)
+    {
+        Logging.Handler.Error("//admin/files/download/device", "General error", ex.ToString());
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("An error occurred while downloading the file.");
+    }
+});
 
 // NetLock files download private - GUID, used for update server & trust server
 if (role_update || role_trust)
