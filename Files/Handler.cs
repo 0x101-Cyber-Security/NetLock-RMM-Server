@@ -440,21 +440,28 @@ namespace NetLock_RMM_Server.Files
 
                             string access = reader.GetString(reader.GetOrdinal("access"));
 
+                            // Check if the file is public or private
                             if (access == "Public")
                                 access_granted = true;
                             else if (access == "Private")
                             {
-                                // Check if the API key is valid
-                                if (await Verify_Api_Key(api_key))
+                                // Check if the password is valid
+                                if (password == reader.GetString(reader.GetOrdinal("password")))
+                                {
                                     access_granted = true;
+                                }
                                 else
                                     access_granted = false;
 
-                                // Check if the password is valid
-                                if (password == reader.GetString(reader.GetOrdinal("password")))
-                                    access_granted = true;
-                                else
-                                    access_granted = false;
+                                // Check if the API key is valid, if the password is invalid
+                                if (!access_granted)
+                                {
+                                    // Check if the API key is valid
+                                    if (await Verify_Api_Key(api_key))
+                                        access_granted = true;
+                                    else
+                                        access_granted = false;
+                                }
                             }
                         }
                         else

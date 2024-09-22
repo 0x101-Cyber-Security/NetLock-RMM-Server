@@ -49,7 +49,7 @@ namespace NetLock_Server.Agent.Windows
             public Admin_Identity? admin_identity { get; set; }
         }
 
-        public static async Task<string> Verify_Device(string json, string ip_address_external)
+        public static async Task<string> Verify_Device(string json, string ip_address_external, bool update)
         {
             MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
 
@@ -219,8 +219,8 @@ namespace NetLock_Server.Agent.Windows
                     device_exists = false;
                 }
 
-                //Update device data if authorized
-                if (authentification_result == "authorized" || authentification_result == "synced" || authentification_result == "not_synced" && device_exists)
+                //Update device data if authorized, not synced or synced, and device exists, and update is true
+                if (authentification_result == "authorized" || authentification_result == "synced" || authentification_result == "not_synced" && device_exists & update)
                 {
                     string synced = "0";
 

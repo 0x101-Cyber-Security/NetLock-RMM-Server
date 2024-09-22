@@ -64,6 +64,7 @@ namespace NetLock_Server.SignalR
             public string file_browser_path_move { get; set; } 
             public string file_browser_file_content { get; set; } 
             public string file_browser_file_guid { get; set; }
+            public string command { get; set; } 
         }
          
         public class Root_Entity
@@ -394,7 +395,12 @@ namespace NetLock_Server.SignalR
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameFile", $"Response sent to admin client {admin_client_id}: {response}");
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameFile", response);
                     }
-                    else if (file_browser_command == 10) // download file
+                    else if (file_browser_command == 10) // upload file
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserUploadFile", $"Response sent to admin client {admin_client_id}: {response}");
+                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserUploadFile", response);
+                    }
+                    else if (file_browser_command == 11) // download file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDownloadFile", $"Response sent to admin client {admin_client_id}: {response}");
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDownloadFile", response);
@@ -455,14 +461,14 @@ namespace NetLock_Server.SignalR
                 if (String.IsNullOrEmpty(client_id) && command.type == 0) // if remote shell
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", "Client ID not found.");
-                    await Clients.Caller.SendAsync("ReceiveClientResponseRemoteShell", "Device not connected.");
+                    await Clients.Caller.SendAsync("ReceiveClientResponseRemoteShell", "Remote device is not connected with the NetLock RMM backend. Make sure your target device is connected.");
 
                     return;
                 }
                 else if (String.IsNullOrEmpty(client_id))
                 {
-                    Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", "Client ID not found.");
-                    await Clients.Caller.SendAsync("ReceiveClientResponse", "Device not connected.");
+                    Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", "Remote device is not connected with the NetLock RMM backend. Make sure your target device is connected.");
+                    await Clients.Caller.SendAsync("ReceiveClientResponse", "Remote device is not connected with the NetLock RMM backend. Make sure your target device is connected.");
 
                     return;
                 }
