@@ -406,6 +406,16 @@ namespace NetLock_Server.SignalR
                         await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDownloadFile", response);
                     }
                 }
+                else if (type == 2) // Service Action
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseServiceAction", $"Response sent to admin client {admin_client_id}: {response}");
+                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseServiceAction", response);
+                }
+                else if (type == 3) // Task Manager Action
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseTaskManagerAction", $"Response sent to admin client {admin_client_id}: {response}");
+                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseTaskManagerAction", response);
+                }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
             }

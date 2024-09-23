@@ -146,8 +146,7 @@
               "RelativeToolTip": "NetLock Server.http",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2024-09-22T17:24:34.341Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-22T17:24:34.341Z"
             },
             {
               "$type": "Document",
@@ -159,8 +158,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AQIAALcCAAAAAAAAAAAUwPACAAAOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.945Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.945Z"
             },
             {
               "$type": "Document",
@@ -206,7 +204,7 @@
               "RelativeDocumentMoniker": "SignalR\\CommandHub .cs",
               "ToolTip": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\SignalR\\CommandHub .cs",
               "RelativeToolTip": "SignalR\\CommandHub .cs",
-              "ViewState": "AQIAAHEAAAAAAAAAAAAUwEIAAAAhAAAA",
+              "ViewState": "AQIAAHUBAAAAAAAAAAAUwJUBAAA5AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-28T19:37:29.553Z",
               "EditorCaption": ""
@@ -257,8 +255,7 @@
               "RelativeToolTip": "Agent\\Windows\\Authentification.cs",
               "ViewState": "AQIAALgAAAAAAAAAAADwv9UAAABOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.82Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.82Z"
             },
             {
               "$type": "Document",
@@ -294,8 +291,7 @@
               "RelativeToolTip": "Application_Paths.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.939Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-23T19:40:32.939Z"
             },
             {
               "$type": "Document",
@@ -319,8 +315,7 @@
               "RelativeToolTip": "Files\\Handler.cs",
               "ViewState": "AQIAAHYBAAAAAAAAAADwv8EBAAAhAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-12T22:18:26.738Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-12T22:18:26.738Z"
             },
             {
               "$type": "Document",
@@ -332,8 +327,7 @@
               "RelativeToolTip": "Helper\\IO.cs",
               "ViewState": "AQIAABAAAAAAAAAAAAAiwBgAAABSAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-09-12T22:42:05.965Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-09-12T22:42:05.965Z"
             },
             {
               "$type": "Document",
@@ -357,8 +351,7 @@
               "RelativeToolTip": "SignalR\\ConnectionManager.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-01T13:24:11.211Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-01T13:24:11.211Z"
             },
             {
               "$type": "Document",
