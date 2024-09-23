@@ -50,6 +50,14 @@
               "target": "Package",
               "version": "[4.0.3, )"
             },
+            "LLamaSharp": {
+              "target": "Package",
+              "version": "[0.16.0, )"
+            },
+            "LLamaSharp.Backend.Cpu": {
+              "target": "Package",
+              "version": "[0.16.0, )"
+            },
             "LettuceEncrypt": {
               "target": "Package",
               "version": "[1.3.3, )"

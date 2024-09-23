@@ -19,6 +19,10 @@ using System.IO;
 using NetLock_RMM_Server.Helper;
 using static NetLock_Server.SignalR.CommandHub;
 using Microsoft.AspNetCore.Builder;
+using LLama.Common;
+using LLama;
+using NetLock_RMM_Server.LLM;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +44,7 @@ var role_trust = builder.Configuration.GetValue<bool>("Kestrel:Roles:Trust");
 var role_remote = builder.Configuration.GetValue<bool>("Kestrel:Roles:Remote");
 var role_notification = builder.Configuration.GetValue<bool>("Kestrel:Roles:Notification");
 var role_file = builder.Configuration.GetValue<bool>("Kestrel:Roles:File");
+var role_llm = builder.Configuration.GetValue<bool>("Kestrel:Roles:LLM");
 
 Console.WriteLine("Version: " + Application_Settings.version);
 
@@ -164,6 +169,9 @@ builder.Services.AddSignalR(options =>
     options.MaximumReceiveMessageSize = 102400000; // Increase maximum message size to 100 MB
 });
 
+// Add the LLaMa model service as a singleton. Currently disabled because in testings using ANY llm was just to CPU intensive. As most servers dont have a GPU, implementation needs to be postboned to a unknown time. Might find a solution in future
+//builder.Services.AddSingleton<LLaMaService>();
+
 // Add timer to process events for notifications
 async Task Events_Task()
 {
@@ -200,12 +208,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
-
     if (hsts)
     {
         // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -684,7 +689,7 @@ if (role_file)
     {
         try
         {
-            // Prüfen, ob der Pfad null oder leer ist
+            // Check whether the path is null or empty
             if (String.IsNullOrWhiteSpace(path))
             {
                 context.Response.StatusCode = 400;
@@ -692,17 +697,17 @@ if (role_file)
                 return;
             }
 
-            // Behandle den speziellen Basispfad
+            // Handle the special base path
             if (path.Equals("base1337", StringComparison.OrdinalIgnoreCase))
             {
                 path = String.Empty;
             }
             else
             {
-                // URL-dekodieren und mögliche unerlaubte Zeichen entfernen
+                // URL decoding and removal of possible unauthorised characters
                 path = Uri.UnescapeDataString(path);
 
-                // Verhindere Path-Traversal-Attacken durch Normalisierung des Pfades
+                // Prevent path traversal attacks by normalising the path
                 path = Path.GetFullPath(Path.Combine(Application_Paths._private_files, path));
 
                 if (!path.StartsWith(Application_Paths._private_files))
@@ -715,24 +720,23 @@ if (role_file)
 
             Logging.Handler.Debug("/admin/files", "Request received.", path);
 
-            // Sicherheitsheader hinzufügen
+            // Add security header
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
 
-            // Externe IP-Adresse ermitteln (sofern verfügbar)
+            // Determine external IP address (if available)
             string ipAddressExternal = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue)
                 ? headerValue.ToString()
                 : context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            // API-Schlüssel verifizieren
-            if (!context.Request.Headers.TryGetValue("x-api-key", out StringValues apiKey) ||
-                !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(apiKey))
+            // Verify API key
+            if (!context.Request.Headers.TryGetValue("x-api-key", out StringValues apiKey) || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(apiKey))
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Unauthorized.");
                 return;
             }
 
-            // Verzeichnis prüfen
+            // Check directory
             var fullPath = Path.Combine(Application_Paths._private_files, path);
 
             if (!Directory.Exists(fullPath))
@@ -742,7 +746,7 @@ if (role_file)
                 return;
             }
 
-            // Verzeichnisinhalt abrufen
+            // Retrieve directory contents
             var directoryTree = await NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
 
             //  Create json (directoryTree) & Application_Paths._private_files
@@ -1362,6 +1366,59 @@ if (role_update || role_trust)
         }
     }).WithName("private_download_netlock").WithOpenApi();
 }
+
+/*
+if (role_llm)
+{
+    app.MapPost("/llm/chat/admin", async (HttpContext context, LLaMaService llamaService) =>
+    {
+        try
+        {
+            Logging.Handler.Debug("POST Request Mapping", "/llm/chat/admin", "Request received.");
+
+            // Add headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+            // Get the remote IP address from the X-Forwarded-For header
+            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue)
+                ? headerValue.ToString()
+                : context.Connection.RemoteIpAddress?.ToString();
+
+            // Verify API key
+            if (!context.Request.Headers.TryGetValue("x-api-key", out var apiKey) ||
+                !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(apiKey))
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+
+            // Read the JSON data from the request body
+            string json;
+            using (var reader = new StreamReader(context.Request.Body))
+            {
+                json = await reader.ReadToEndAsync() ?? string.Empty;
+            }
+
+            Console.WriteLine("Request: " + json);
+
+            // Handle LLaMa service response
+            var response = await llamaService.GetResponseAsync(json);
+
+            // Send response
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsync(response);
+        }
+        catch (Exception ex)
+        {
+            Logging.Handler.Error("POST Request Mapping", "/llm/chat/admin", ex.ToString());
+
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("Internal Server Error.");
+        }
+    });
+}
+*/
 
 //Start server
 app.Run();

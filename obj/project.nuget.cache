@@ -1,20 +1,22 @@
 {
   "version": 2,
-  "dgSpecHash": "cQUipHGkGV4=",
+  "dgSpecHash": "JQ5ReW6VuFU=",
   "success": true,
   "projectFilePath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\NicoMak\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\certes\\3.0.4\\certes.3.0.4.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\lettuceencrypt\\1.3.3\\lettuceencrypt.1.3.3.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\llamasharp\\0.16.0\\llamasharp.0.16.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\llamasharp.backend.cpu\\0.16.0\\llamasharp.backend.cpu.0.16.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\mcmaster.aspnetcore.kestrel.certificates\\1.0.0\\mcmaster.aspnetcore.kestrel.certificates.1.0.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.7\\microsoft.aspnetcore.connections.abstractions.8.0.7.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.7\\microsoft.aspnetcore.openapi.8.0.7.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.signalr.common\\8.0.7\\microsoft.aspnetcore.signalr.common.8.0.7.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.features\\8.0.7\\microsoft.extensions.features.8.0.7.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.1\\microsoft.extensions.logging.abstractions.8.0.1.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",
@@ -26,6 +28,7 @@
     "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.6.2\\swashbuckle.aspnetcore.swaggergen.6.6.2.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.6.2\\swashbuckle.aspnetcore.swaggerui.6.6.2.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\system.numerics.tensors\\8.0.0\\system.numerics.tensors.8.0.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\telegram.bot\\19.0.0\\telegram.bot.19.0.0.nupkg.sha512"
   ],
   "logs": []

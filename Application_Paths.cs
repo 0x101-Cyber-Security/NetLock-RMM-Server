@@ -20,6 +20,9 @@ namespace NetLock_Server
         //public static string _private_files_admin = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "admin");
         public static string _private_files_admin_db_friendly = Path.Combine(GetCurrentDirectory(), "www", "private", "files");
 
+        public static string llm_model_path = Path.Combine(GetCurrentDirectory(), "llm", "model.gguf");
+
+
         // URLs
         public static string redirect_path = "/";
 
