@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Net.Mail;
 using System.Net;
 using System.Text.Json;
-using NetLock_Server;
+using NetLock_RMM_Server.Configuration;
 
 namespace Helper.Notifications
 {
@@ -13,7 +13,7 @@ namespace Helper.Notifications
         {
             string connector_url = String.Empty;
 
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(MySQL.Connection_String);
 
             try
             {

@@ -3,6 +3,7 @@ using System.Net;
 using MySqlConnector;
 using System.Data.Common;
 using System.Text.Json;
+using NetLock_RMM_Server.Configuration;
 
 
 namespace Helper.Notifications
@@ -23,7 +24,7 @@ namespace Helper.Notifications
             string smtp_json = String.Empty;
             Smtp_Settings smtpSettings = null;
 
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(MySQL.Connection_String);
 
             try
             {

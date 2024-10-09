@@ -1,9 +1,9 @@
 ﻿using MySqlConnector;
 using System.Data.Common;
 using System.Text.Json;
-using static NetLock_Server.Agent.Windows.Device_Handler;
+using static NetLock_RMM_Server.Agent.Windows.Device_Handler;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Event_Handler
     {
@@ -51,7 +51,7 @@ namespace NetLock_Server.Agent.Windows
         {
             Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "json", json);
 
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {

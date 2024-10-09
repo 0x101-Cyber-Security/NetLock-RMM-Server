@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace NetLock_Server.SignalR
+namespace NetLock_RMM_Server.SignalR
 {
     public class ConnectionManager
     {

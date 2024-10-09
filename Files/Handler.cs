@@ -1,6 +1,6 @@
 ﻿using MySqlConnector;
-using NetLock_Server;
-using NetLock_Server.MySQL;
+using NetLock_RMM_Server;
+using NetLock_RMM_Server.MySQL;
 using System;
 using System.Data.Common;
 using System.IO;
@@ -35,7 +35,7 @@ namespace NetLock_RMM_Server.Files
             {
                 bool api_key_exists = false;
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -107,10 +107,10 @@ namespace NetLock_RMM_Server.Files
                 Logging.Handler.Debug("Files.Register_File", "device_name", device_name);
 
                 // Get the tenant id & location id with tenant_guid & location_guid
-                (int tenant_id, int location_id) = await NetLock_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+                (int tenant_id, int location_id) = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
 
                 // Get device ID
-                int device_id = await NetLock_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+                int device_id = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
 
                 //  Create the JSON object
                 var jsonObject = new
@@ -122,7 +122,7 @@ namespace NetLock_RMM_Server.Files
                 string register_json = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
                 Logging.Handler.Debug("Files.Register_File", "info_json ", register_json);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -192,7 +192,7 @@ namespace NetLock_RMM_Server.Files
             {
                 Console.WriteLine("Unregistering file with GUID: " + guid);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -290,7 +290,7 @@ namespace NetLock_RMM_Server.Files
                         File.Move(safePath, newPath);
 
                         // Update the path and name in the DB
-                        using (MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String()))
+                        using (MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String))
                         {
                             try
                             {
@@ -359,13 +359,13 @@ namespace NetLock_RMM_Server.Files
             try
             {
                 // Get the tenant id & location id with tenant_guid & location_guid
-                (int tenant_id, int location_id) = await NetLock_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+                (int tenant_id, int location_id) = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
 
                 // Get device ID
-                int device_id = await NetLock_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+                int device_id = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
 
                 // Check if the device id matches with the file guid
-                MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -418,7 +418,7 @@ namespace NetLock_RMM_Server.Files
             {
                 Logging.Handler.Debug("Files.Verify_File_Access", "guid", guid);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -497,7 +497,7 @@ namespace NetLock_RMM_Server.Files
 
             try
             {
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -559,7 +559,7 @@ namespace NetLock_RMM_Server.Files
 
             try
             {
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {

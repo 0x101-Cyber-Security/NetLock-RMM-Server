@@ -1,14 +1,14 @@
 ﻿using MySqlConnector;
 using System.Text.Json;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Helper
     {
         // Get the tenant id & location id with tenant_guid & location_guid
         public static async Task<(int, int)> Get_Tenant_Location_Id(string tenant_guid, string location_guid)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -46,7 +46,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Helper.Get_Tenant_Location_Id", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Helper.Get_Tenant_Location_Id", "General error", ex.ToString());
                 return (0, 0);
             }
             finally
@@ -58,7 +58,7 @@ namespace NetLock_Server.Agent.Windows
         // Get tenant and location name with tenant id & location id
         public static async Task<(string, string)> Get_Tenant_Location_Name(int tenant_id, int location_id)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -96,7 +96,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Helper.Get_Tenant_Location_Name", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Helper.Get_Tenant_Location_Name", "General error", ex.ToString());
                 return (String.Empty, String.Empty);
             }
             finally
@@ -108,7 +108,7 @@ namespace NetLock_Server.Agent.Windows
         // Get device id with device name, tenant id & location id
         public static async Task<int> Get_Device_Id(string device_name, int tenant_id, int location_id)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -134,7 +134,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Helper.Get_Device_Id", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Helper.Get_Device_Id", "General error", ex.ToString());
                 return 0;
             }
             finally
@@ -148,23 +148,23 @@ namespace NetLock_Server.Agent.Windows
         {
             try
             {
-                Logging.Handler.Debug("NetLock_Server.Modules.Helper.Get_Role_Status", "role", role);
+                Logging.Handler.Debug("NetLock_RMM_Server.Modules.Helper.Get_Role_Status", "role", role);
                 
                 string json = File.ReadAllText("appsettings.json");
-                Logging.Handler.Debug("NetLock_Server.Modules.Helper.Get_Role_Status", "appsettings.json", json);
+                Logging.Handler.Debug("NetLock_RMM_Server.Modules.Helper.Get_Role_Status", "appsettings.json", json);
 
                 using (JsonDocument document = JsonDocument.Parse(json))
                 {
                     JsonElement kestrelElement = document.RootElement.GetProperty("Kestrel");
                     JsonElement rolesElement = kestrelElement.GetProperty("Roles");
                     bool role_status = rolesElement.GetProperty(role).GetBoolean();
-                    Logging.Handler.Debug("NetLock_Server.Modules.Helper.Get_Role_Status", "role_status", role_status.ToString());
+                    Logging.Handler.Debug("NetLock_RMM_Server.Modules.Helper.Get_Role_Status", "role_status", role_status.ToString());
                     return role_status;
                 }
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Helper.Get_Role_Status", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Helper.Get_Role_Status", "General error", ex.ToString());
                 return false;
             }
         }

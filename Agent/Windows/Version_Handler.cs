@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Version_Handler
     {

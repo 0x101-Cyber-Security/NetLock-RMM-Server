@@ -1,6 +1,7 @@
 ﻿using MySqlConnector;
 using System.Data.Common;
 using System.Text;
+using NetLock_RMM_Server.Configuration;
 
 namespace Helper.Notifications
 {
@@ -11,7 +12,7 @@ namespace Helper.Notifications
             string topic_url = String.Empty;
             string access_token = String.Empty;
 
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(MySQL.Connection_String);
             try
             {
                 await conn.OpenAsync();

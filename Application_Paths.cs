@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Runtime.InteropServices;
 
-namespace NetLock_Server
+namespace NetLock_RMM_Server
 {
     public class Application_Paths
     {

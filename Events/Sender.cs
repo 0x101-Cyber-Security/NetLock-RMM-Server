@@ -2,10 +2,10 @@
 using MySqlConnector;
 using System.Text.Json;
 using System.Threading.Tasks;
-using NetLock_Server.Agent.Windows;
+using NetLock_RMM_Server.Agent.Windows;
 using System.Runtime.CompilerServices;
 
-namespace NetLock_Server.Events
+namespace NetLock_RMM_Server.Events
 {
     public class Sender
     {
@@ -19,7 +19,7 @@ namespace NetLock_Server.Events
 
         public static async Task Smtp(string type, string table)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -73,7 +73,7 @@ namespace NetLock_Server.Events
 
         private static async Task Check_Notifications(string id, string type, string table, string severity, string reported_by, string _event, string description)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {

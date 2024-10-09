@@ -1,10 +1,10 @@
 ﻿using MySqlConnector;
-using NetLock_Server;
+using NetLock_RMM_Server;
 using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
-namespace NetLock_RMM_Server.Helper
+namespace Helper
 {
     public class IO
     {
@@ -24,7 +24,7 @@ namespace NetLock_RMM_Server.Helper
         // Get directories from path
         public static async Task<List<File_Or_Directory_Info>> Get_Directory_Index(string path)
         {
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(NetLock_RMM_Server.Configuration.MySQL.Connection_String);
             var directoryDetails = new List<File_Or_Directory_Info>();
 
             try

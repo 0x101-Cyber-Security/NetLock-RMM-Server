@@ -1,28 +1,29 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using NetLock_Server.Agent.Windows;
+using NetLock_RMM_Server.Agent.Windows;
 using System.Security.Principal;
 using Microsoft.AspNetCore.SignalR;
-using NetLock_Server.SignalR;
+using NetLock_RMM_Server.SignalR;
 using System.Net;
 using System;
 using System.Text.Json;
-using static NetLock_Server.Agent.Windows.Authentification;
+using static NetLock_RMM_Server.Agent.Windows.Authentification;
 using Microsoft.Extensions.DependencyInjection;
-using NetLock_Server;
-using NetLock_Server.Events;
+using NetLock_RMM_Server;
+using NetLock_RMM_Server.Events;
 using Microsoft.Extensions.Primitives;
 using LettuceEncrypt;
 using System.Threading;
 using System.IO;
-using NetLock_RMM_Server.Helper;
-using static NetLock_Server.SignalR.CommandHub;
+using static NetLock_RMM_Server.SignalR.CommandHub;
 using Microsoft.AspNetCore.Builder;
 using LLama.Common;
 using LLama;
 using NetLock_RMM_Server.LLM;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.InteropServices;
+using NetLock_RMM_Server.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,18 +47,20 @@ var role_notification = builder.Configuration.GetValue<bool>("Kestrel:Roles:Noti
 var role_file = builder.Configuration.GetValue<bool>("Kestrel:Roles:File");
 var role_llm = builder.Configuration.GetValue<bool>("Kestrel:Roles:LLM");
 
+// Output OS
+Console.WriteLine("OS: " + RuntimeInformation.OSDescription);
+Console.WriteLine("Architecture: " + RuntimeInformation.OSArchitecture);
+Console.WriteLine("Framework: " + RuntimeInformation.FrameworkDescription);
+Console.WriteLine(Environment.NewLine);
+
+// Output version
+Console.WriteLine("NetLock RMM Server");
 Console.WriteLine("Version: " + Application_Settings.version);
-
+Console.WriteLine(Environment.NewLine);
 Console.WriteLine("Configuration loaded from appsettings.json");
-
-// Output kestrel configuration
-Console.WriteLine($"Server role (comm): {role_comm}");
-Console.WriteLine($"Server role (update): {role_update}");
-Console.WriteLine($"Server role (trust): {role_trust}");
-Console.WriteLine($"Server role (remote): {role_remote}");
-Console.WriteLine($"Server role (notification): {role_notification}");
-Console.WriteLine($"Server role (file): {role_file}");
-
+Console.WriteLine(Environment.NewLine);
+// Output http port
+Console.WriteLine("[Webserver]");
 Console.WriteLine($"Http: {builder.Configuration.GetValue<bool>("Kestrel:Endpoint:Http:Enabled")}");
 Console.WriteLine($"Http Port: {builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port")}");
 Console.WriteLine($"Https: {https}");
@@ -69,9 +72,14 @@ Console.WriteLine($"LetsEncrypt: {letsencrypt}");
 
 Console.WriteLine($"Custom Certificate Path: {cert_path}");
 Console.WriteLine($"Custom Certificate Password: {cert_password}");
+Console.WriteLine(Environment.NewLine);
 
 // Output mysql configuration
-var mysqlConfig = builder.Configuration.GetSection("MySQL").Get<NetLock_Server.MySQL.Config>();
+var mysqlConfig = builder.Configuration.GetSection("MySQL").Get<NetLock_RMM_Server.MySQL.Config>();
+MySQL.Connection_String = $"Server={mysqlConfig.Server};Port={mysqlConfig.Port};Database={mysqlConfig.Database};User={mysqlConfig.User};Password={mysqlConfig.Password};SslMode={mysqlConfig.SslMode};{mysqlConfig.AdditionalConnectionParameters}";
+MySQL.Database = mysqlConfig.Database;
+
+Console.WriteLine("[MySQL]");
 Console.WriteLine($"MySQL Server: {mysqlConfig.Server}");
 Console.WriteLine($"MySQL Port: {mysqlConfig.Port}");
 Console.WriteLine($"MySQL Database: {mysqlConfig.Database}");
@@ -79,11 +87,20 @@ Console.WriteLine($"MySQL User: {mysqlConfig.User}");
 Console.WriteLine($"MySQL Password: {mysqlConfig.Password}");
 Console.WriteLine($"MySQL SSL Mode: {mysqlConfig.SslMode}");
 Console.WriteLine($"MySQL additional parameters: {mysqlConfig.AdditionalConnectionParameters}");
+Console.WriteLine(Environment.NewLine);
+
+// Output kestrel configuration
+Console.WriteLine($"Server role (comm): {role_comm}");
+Console.WriteLine($"Server role (update): {role_update}");
+Console.WriteLine($"Server role (trust): {role_trust}");
+Console.WriteLine($"Server role (remote): {role_remote}");
+Console.WriteLine($"Server role (notification): {role_notification}");
+Console.WriteLine($"Server role (file): {role_file}");
 
 // Output firewall status
-bool microsoft_defender_firewall_status = NetLock_Server.Microsoft_Defender_Firewall.Handler.Status();
+bool microsoft_defender_firewall_status = NetLock_RMM_Server.Microsoft_Defender_Firewall.Handler.Status();
 
-if (microsoft_defender_firewall_status)
+if (microsoft_defender_firewall_status && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine("Microsoft Defender Firewall is enabled.");
@@ -101,14 +118,14 @@ if (!Directory.Exists(Application_Paths.logs_dir))
     Directory.CreateDirectory(Application_Paths.logs_dir);
 
 // Add firewall rule for HTTP
-NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());
-NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());
+NetLock_RMM_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());
+NetLock_RMM_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Http:Port").ToString());
 
 if (https)
 {
     // Add firewall rule for HTTPS
-    NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
-    NetLock_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
+    NetLock_RMM_Server.Microsoft_Defender_Firewall.Handler.Rule_Inbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
+    NetLock_RMM_Server.Microsoft_Defender_Firewall.Handler.Rule_Outbound(builder.Configuration.GetValue<int>("Kestrel:Endpoint:Https:Port").ToString());
 
     if (letsencrypt)
         builder.Services.AddLettuceEncrypt();
@@ -156,11 +173,23 @@ builder.Services.Configure<FormOptions>(x =>
     x.MultipartBodyLengthLimit = 10L * 1024 * 1024 * 1024; // 10 GB // In case of multipart
 });
 
+
+// Check mysql connection
+if (!await NetLock_RMM_Server.MySQL.Handler.Check_Connection())
+{
+    Console.WriteLine("MySQL connection failed. Exiting...");
+    Thread.Sleep(5000);
+    Environment.Exit(1);
+}
+else
+{
+    Console.WriteLine("MySQL connection successful.");
+}
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMvc();
-builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<CommandHub>();
@@ -178,15 +207,15 @@ async Task Events_Task()
     string started_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
     Console.WriteLine("Periodic task executed at: " + started_time);
-    await NetLock_Server.Events.Sender.Smtp("mail_status", "mail_notifications");
-    await NetLock_Server.Events.Sender.Smtp("ms_teams_status", "microsoft_teams_notifications");
-    await NetLock_Server.Events.Sender.Smtp("telegram_status", "telegram_notifications");
-    await NetLock_Server.Events.Sender.Smtp("ntfy_sh_status", "ntfy_sh_notifications");
+    await NetLock_RMM_Server.Events.Sender.Smtp("mail_status", "mail_notifications");
+    await NetLock_RMM_Server.Events.Sender.Smtp("ms_teams_status", "microsoft_teams_notifications");
+    await NetLock_RMM_Server.Events.Sender.Smtp("telegram_status", "telegram_notifications");
+    await NetLock_RMM_Server.Events.Sender.Smtp("ntfy_sh_status", "ntfy_sh_notifications");
 
     string finished_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     Console.WriteLine("Periodic task finished at: " + finished_time);
 
-    await NetLock_Server.Events.Sender.Mark_Old_Read(started_time, finished_time);
+    await NetLock_RMM_Server.Events.Sender.Mark_Old_Read(started_time, finished_time);
 }
 
 // Wrapper for Timer
@@ -604,7 +633,7 @@ if (role_comm)
             json = await reader.ReadToEndAsync() ?? string.Empty;
         }
 
-        bool api_key_status = await NetLock_Server.SignalR.Webconsole.Handler.Verify_Api_Key(json);
+        bool api_key_status = await NetLock_RMM_Server.SignalR.Webconsole.Handler.Verify_Api_Key(json);
 
         if (api_key_status == false)
         {
@@ -614,7 +643,7 @@ if (role_comm)
         }
 
         // Get the command
-        string command = await NetLock_Server.SignalR.Webconsole.Handler.Get_Command(json);
+        string command = await NetLock_RMM_Server.SignalR.Webconsole.Handler.Get_Command(json);
 
         // Get list of all connected clients
         var clients = ConnectionManager.Instance.ClientConnections;
@@ -747,7 +776,7 @@ if (role_file)
             }
 
             // Retrieve directory contents
-            var directoryTree = await NetLock_RMM_Server.Helper.IO.Get_Directory_Index(fullPath);
+            var directoryTree = await Helper.IO.Get_Directory_Index(fullPath);
 
             //  Create json (directoryTree) & Application_Paths._private_files
             var jsonObject = new

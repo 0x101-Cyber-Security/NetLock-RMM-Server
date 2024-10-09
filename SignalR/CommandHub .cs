@@ -7,9 +7,9 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 
-using static NetLock_Server.Agent.Windows.Authentification;
+using static NetLock_RMM_Server.Agent.Windows.Authentification;
 
-namespace NetLock_Server.SignalR
+namespace NetLock_RMM_Server.SignalR
 {
     public class CommandHub : Hub
     {
@@ -311,7 +311,7 @@ namespace NetLock_Server.SignalR
                 // insert result into history table
                 if (type == 0) // remote shell
                 {
-                    MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+                    MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                     try
                     {

@@ -6,34 +6,35 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.ComponentModel;
 
-namespace NetLock_Server.MySQL
+namespace NetLock_RMM_Server.MySQL
 {
     public class Handler
     {
-        public static async Task<bool> Test_Connection()
+        // Check connection
+        public static async Task<bool> Check_Connection()
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
-                conn.Open();
-
-                string sql = "SELECT * FROM clients;";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-
-                conn.Close();
+                await conn.OpenAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("Classes.MySQL.Database.Check_Connection", "Result", ex.Message);
+                Console.WriteLine(ex.Message);
                 return false;
             }
-            catch
+            finally
             {
-                return false;
+                await conn.CloseAsync();
             }
         }
 
         public static async Task<bool> Check_Duplicate(string query)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -61,7 +62,7 @@ namespace NetLock_Server.MySQL
 
         public static async Task<bool> Execute_Command(string query)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {

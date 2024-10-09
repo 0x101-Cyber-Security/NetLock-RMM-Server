@@ -1,4 +1,4 @@
-﻿namespace NetLock_Server
+﻿namespace NetLock_RMM_Server
 { 
     public class Application_Settings
     {

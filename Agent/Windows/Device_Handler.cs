@@ -2,10 +2,10 @@
 using System.Data.Common;
 using System.Diagnostics;
 using System.Text.Json;
-using static NetLock_Server.Agent.Windows.Authentification;
-using static NetLock_Server.Agent.Windows.Device_Handler;
+using static NetLock_RMM_Server.Agent.Windows.Authentification;
+using static NetLock_RMM_Server.Agent.Windows.Device_Handler;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Device_Handler
     {
@@ -54,7 +54,7 @@ namespace NetLock_Server.Agent.Windows
 
         public static async Task<string> Update_Device_Information(string json)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
             
             try
             {
@@ -271,7 +271,7 @@ namespace NetLock_Server.Agent.Windows
                 }
                 catch (Exception ex)
                 {
-                    Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
+                    Logging.Handler.Error("NetLock_RMM_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
                 }
 
                 string device_information_general_history_execute_query = "INSERT INTO `device_information_general_history` (`device_id`, `date`, `ip_address_internal`, `ip_address_external`, `network_adapters`, `json`) VALUES (@device_id, @date, @ip_address_internal, @ip_address_external, @network_adapters, @json);";

@@ -4,10 +4,10 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Concurrent;
-using NetLock_Server.SignalR;
+using NetLock_RMM_Server.SignalR;
 using Microsoft.Extensions.Primitives;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Authentification
     {
@@ -51,7 +51,7 @@ namespace NetLock_Server.Agent.Windows
 
         public static async Task<string> Verify_Device(string json, string ip_address_external, bool update)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -292,7 +292,7 @@ namespace NetLock_Server.Agent.Windows
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Authentification.Verify_Device", "General error", ex.ToString());
                 return "invalid";
             }
             finally
@@ -305,7 +305,7 @@ namespace NetLock_Server.Agent.Windows
         {
             bool isPasswordCorrect = false;
 
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -323,7 +323,7 @@ namespace NetLock_Server.Agent.Windows
                 }
                 await reader.CloseAsync();
 
-                Logging.Handler.Debug("NetLock_Server.Modules.Authentification.Verify_Admin", "isPasswordCorrect", isPasswordCorrect.ToString());
+                Logging.Handler.Debug("NetLock_RMM_Server.Modules.Authentification.Verify_Admin", "isPasswordCorrect", isPasswordCorrect.ToString());
 
                 return isPasswordCorrect;
             }
@@ -341,7 +341,7 @@ namespace NetLock_Server.Agent.Windows
         {
             bool isCorrect = false;
 
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
@@ -352,18 +352,18 @@ namespace NetLock_Server.Agent.Windows
 
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
 
-                Logging.Handler.Debug("NetLock_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "count", count.ToString());
+                Logging.Handler.Debug("NetLock_RMM_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "count", count.ToString());
 
                 if (count > 0)
                     isCorrect = true;
                 
-                Logging.Handler.Debug("NetLock_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "isCorrect", isCorrect.ToString());
+                Logging.Handler.Debug("NetLock_RMM_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "isCorrect", isCorrect.ToString());
 
                 return isCorrect;
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "General error", ex.ToString());
+                Logging.Handler.Error("NetLock_RMM_Server.Modules.Authentification.Verify_NetLock_Package_Configurations_Guid", "General error", ex.ToString());
                 return false;
             }
             finally
@@ -394,7 +394,7 @@ namespace NetLock_Server.Agent.Windows
                     return;
                 }
 
-                MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -592,7 +592,7 @@ namespace NetLock_Server.Agent.Windows
                 }
                 catch (Exception ex)
                 {
-                    Logging.Handler.Error("NetLock_Server.Modules.Authentification.InvokeAsync", "General error", ex.ToString());
+                    Logging.Handler.Error("NetLock_RMM_Server.Modules.Authentification.InvokeAsync", "General error", ex.ToString());
 
                     var clientId = context.Connection.Id;
 

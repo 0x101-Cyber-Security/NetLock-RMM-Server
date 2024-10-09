@@ -3,6 +3,7 @@ using MySqlConnector;
 using System.Data.Common;
 using System.Net;
 using Telegram.Bot;
+using NetLock_RMM_Server.Configuration;
 
 namespace Helper.Notifications
 {
@@ -13,7 +14,7 @@ namespace Helper.Notifications
             string bot_token = String.Empty;
             string chat_id = String.Empty;
 
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(MySQL.Connection_String);
 
             try
             {
