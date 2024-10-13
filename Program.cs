@@ -233,18 +233,10 @@ Timer events_timer = new Timer(Events_TimerCallback, null, TimeSpan.Zero, TimeSp
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (hsts)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
-    if (hsts)
-    {
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
-    }
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 if (https_force)
@@ -319,7 +311,7 @@ if (role_comm)
             Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Check_Version", ex.ToString());
             await context.Response.WriteAsync("Invalid request.");
         }
-    }).WithName("Swagger0").WithOpenApi();
+    });
 }
 
 if (role_comm)
@@ -378,7 +370,7 @@ if (role_comm)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
         }
-    }).WithName("Swagger1").WithOpenApi();
+    });
 }
 
 if (role_comm)
@@ -447,7 +439,7 @@ if (role_comm)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
         }
-    }).WithName("Swagger2").WithOpenApi();
+    });
 }
 
 if (role_comm)
@@ -516,7 +508,7 @@ if (role_comm)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
         }
-    }).WithName("Swagger3").WithOpenApi();
+    });
 }
 
 if (role_comm)
@@ -587,7 +579,7 @@ if (role_comm)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Invalid request.");
         }
-    }).WithName("Swagger4").WithOpenApi();
+    });
 }
 
 //Remote Command: Will be used in later development
@@ -708,7 +700,7 @@ if (role_file)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("An error occurred while downloading the file.");
         }
-    }).WithName("public_download").WithOpenApi();
+    });
 }
 
 // NetLock admin files, get index

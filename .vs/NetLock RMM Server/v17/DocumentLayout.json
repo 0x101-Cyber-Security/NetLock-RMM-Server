@@ -156,7 +156,7 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\NicoMak\\NetLock-Root\\NetLock-RMM-Server\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AQIAAAMCAAAAAAAAAAAUwCACAAANAAAA",
+              "ViewState": "AQIAANoAAAAAAAAAAAAIwO8AAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-23T19:40:32.945Z",
               "EditorCaption": ""
@@ -353,7 +353,8 @@
               "RelativeToolTip": "Helper\\Encryption.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-21T23:43:21.533Z"
+              "WhenOpened": "2024-07-21T23:43:21.533Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -402,7 +403,7 @@
               "RelativeDocumentMoniker": "Agent\\Windows\\Version_Handler.cs",
               "ToolTip": "C:\\Users\\NicoMak\\NetLock-Root\\NetLock-RMM-Server\\Agent\\Windows\\Version_Handler.cs",
               "RelativeToolTip": "Agent\\Windows\\Version_Handler.cs",
-              "ViewState": "AQIAACIAAAAAAAAAAAA1wDoAAABJAAAA",
+              "ViewState": "AQIAACMAAAAAAAAAAAAQwDoAAABJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-23T22:36:13.611Z",
               "EditorCaption": ""
@@ -521,7 +522,8 @@
               "RelativeToolTip": "README.md",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2024-07-16T22:38:08.347Z"
+              "WhenOpened": "2024-07-16T22:38:08.347Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -545,7 +547,8 @@
               "RelativeToolTip": "Properties\\launchSettings.json",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAACoAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-04-23T23:01:07.697Z"
+              "WhenOpened": "2024-04-23T23:01:07.697Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -557,7 +560,8 @@
               "RelativeToolTip": "Helper\\Random.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.811Z"
+              "WhenOpened": "2024-04-23T19:40:32.811Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -569,7 +573,8 @@
               "RelativeToolTip": "Helper\\Base64.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-23T19:40:32.937Z"
+              "WhenOpened": "2024-04-23T19:40:32.937Z",
+              "EditorCaption": ""
             }
           ]
         }
