@@ -25,8 +25,9 @@ namespace NetLock_RMM_Server.Events
             {
                 await conn.OpenAsync();
 
-                string query = "SELECT * FROM `events` WHERE " + type + " = 0;";
+                string query = "SELECT * FROM `events` WHERE @type = 0;";
                 MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@type", type);
 
                 Logging.Handler.Debug("Events.Sender.Smtp", "MySQL_Prepared_Query", query);
 

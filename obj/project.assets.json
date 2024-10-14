@@ -1464,11 +1464,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\NicoMak\\NetLock-Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
+      "projectUniqueName": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
       "projectName": "NetLock_RMM_Server",
-      "projectPath": "C:\\Users\\NicoMak\\NetLock-Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
+      "projectPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
       "packagesPath": "C:\\Users\\NicoMak\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\NicoMak\\NetLock-Root\\NetLock-RMM-Server\\obj\\",
+      "outputPath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\NicoMak\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -1479,6 +1479,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1562,7 +1563,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
