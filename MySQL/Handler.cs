@@ -5,6 +5,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Configuration;
 using System.ComponentModel;
+using System.Collections;
+using System.Net;
+using System.Net.Sockets;
 
 namespace NetLock_RMM_Server.MySQL
 {
@@ -77,7 +80,86 @@ namespace NetLock_RMM_Server.MySQL
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Classes.MySQL.Handler.Execute_Command", "Query: " + query,  ex.Message);
+                Logging.Handler.Error("Classes.MySQL.Handler.Execute_Command", "Query: " + query,  ex.ToString());
+                conn.Close();
+                return false;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        public static async Task<bool> Update_Server_Information()
+        {
+            string ip_address = Dns.GetHostAddresses(Dns.GetHostName()).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).FirstOrDefault().ToString();
+            string domain = Dns.GetHostName();
+            string os = Environment.OSVersion.ToString();
+            string hearthbeat = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string appsettings = File.ReadAllText("appsettings.json");
+
+            int cpu_usage = await Helper.System_Information.Handler.Get_CPU_Usage();
+            int ram_usage = await Helper.System_Information.Handler.Get_RAM_Usage();
+            int disk_usage = await Helper.System_Information.Handler.Get_Disk_Usage();
+
+            // Check if server already exists in table
+            string query = "SELECT COUNT(*) FROM servers WHERE name = @name;";
+
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@name", Environment.MachineName);
+                
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+                if (count == 0)
+                {
+                    // Insert new server
+                    query = "INSERT INTO servers (name, ip_address, domain, os, hearthbeat, appsettings, cpu_usage, ram_usage, disk_usage) VALUES (@name, @ip_address, @domain, @os, @hearthbeat, @appsettings, @cpu_usage, @ram_usage, @disk_usage);";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", Environment.MachineName);
+                    cmd.Parameters.AddWithValue("@ip_address", ip_address);
+                    cmd.Parameters.AddWithValue("@domain", domain);
+                    cmd.Parameters.AddWithValue("@os", os);
+                    cmd.Parameters.AddWithValue("@hearthbeat", hearthbeat);
+                    cmd.Parameters.AddWithValue("@appsettings", appsettings);
+                    cmd.Parameters.AddWithValue("@cpu_usage", cpu_usage);
+                    cmd.Parameters.AddWithValue("@ram_usage", ram_usage);
+                    cmd.Parameters.AddWithValue("@disk_usage", disk_usage);
+
+                    cmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    // Update server
+                    query = "UPDATE servers SET ip_address = @ip_address, domain = @domain, os = @os, hearthbeat = @hearthbeat, appsettings = @appsettings, cpu_usage = @cpu_usage, ram_usage = @ram_usage, disk_usage = @disk_usage WHERE name = @name;";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", Environment.MachineName);
+                    cmd.Parameters.AddWithValue("@ip_address", ip_address);
+                    cmd.Parameters.AddWithValue("@domain", domain);
+                    cmd.Parameters.AddWithValue("@os", os);
+                    cmd.Parameters.AddWithValue("@hearthbeat", hearthbeat);
+                    cmd.Parameters.AddWithValue("@appsettings", appsettings);
+                    cmd.Parameters.AddWithValue("@cpu_usage", cpu_usage);
+                    cmd.Parameters.AddWithValue("@ram_usage", ram_usage);
+                    cmd.Parameters.AddWithValue("@disk_usage", disk_usage);
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                Logging.Handler.Debug("Classes.MySQL.Handler.Update_Server_Information", "Query", query);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("Classes.MySQL.Handler.Update_Server_Information", "Query: " + query, ex.ToString());
                 conn.Close();
                 return false;
             }

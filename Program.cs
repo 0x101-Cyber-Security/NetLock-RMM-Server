@@ -184,6 +184,7 @@ if (!await NetLock_RMM_Server.MySQL.Handler.Check_Connection())
 else
 {
     Console.WriteLine("MySQL connection successful.");
+    await NetLock_RMM_Server.MySQL.Handler.Update_Server_Information();
 }
 
 // Add services to the container.
@@ -206,14 +207,14 @@ async Task Events_Task()
 {
     string started_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-    Console.WriteLine("Periodic task executed at: " + started_time);
+    //Console.WriteLine("Periodic task executed at: " + started_time);
     await NetLock_RMM_Server.Events.Sender.Smtp("mail_status", "mail_notifications");
     await NetLock_RMM_Server.Events.Sender.Smtp("ms_teams_status", "microsoft_teams_notifications");
     await NetLock_RMM_Server.Events.Sender.Smtp("telegram_status", "telegram_notifications");
     await NetLock_RMM_Server.Events.Sender.Smtp("ntfy_sh_status", "ntfy_sh_notifications");
 
     string finished_time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-    Console.WriteLine("Periodic task finished at: " + finished_time);
+    //Console.WriteLine("Periodic task finished at: " + finished_time);
 
     await NetLock_RMM_Server.Events.Sender.Mark_Old_Read(started_time, finished_time);
 }
@@ -229,6 +230,24 @@ void Events_TimerCallback(object state)
 }
 
 Timer events_timer = new Timer(Events_TimerCallback, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
+// Add timer to update server information regulary
+async Task Server_Information_Task()
+{
+    await NetLock_RMM_Server.MySQL.Handler.Update_Server_Information();
+}
+
+// Wrapper for Timer
+void Server_Information_TimerCallback(object state)
+{
+    if (role_notification)
+    {
+        // Call the asynchronous method and do not block it
+        _ = Server_Information_Task();
+    }
+}
+
+Timer server_information_timer = new Timer(Server_Information_TimerCallback, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
 var app = builder.Build();
 
@@ -255,6 +274,14 @@ app.UseWhen(context => context.Request.Path.StartsWithSegments("/commandHub"), a
 app.MapHub<CommandHub>("/commandHub");
 
 //API URLs*
+
+// Test endpoint
+app.MapGet("/test", async context =>
+{
+    context.Response.StatusCode = 200;
+    await context.Response.WriteAsync("Test successful.");
+});
+
 //Check Version
 if (role_comm)
 {
@@ -987,13 +1014,8 @@ if (role_file)
             // Get guid
             guid = Uri.UnescapeDataString(guid);
 
-            Console.WriteLine("Guid: " + guid);
-            Console.WriteLine("Password: " + password);
-
             // Handle the case when password is null or empty
             password = password != null ? Uri.UnescapeDataString(password) : string.Empty;
-
-            
 
             bool hasAccess = await NetLock_RMM_Server.Files.Handler.Verify_File_Access(guid, password, files_api_key);
 

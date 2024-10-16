@@ -46,7 +46,7 @@ namespace Helper.Notifications
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("class", "Send_Mail", ex.Message);
+                Logging.Handler.Error("class", "Send_Mail", ex.ToString());
             }
             finally
             {

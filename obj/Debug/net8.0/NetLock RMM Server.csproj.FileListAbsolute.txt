@@ -258,3 +258,12 @@ C:\Users\NicoMak\NetLock-Root\NetLock-RMM-Server\bin\Debug\net8.0\NetLock_RMM_Se
 C:\Users\NicoMak\NetLock-Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock .0E714E9E.Up2Date
 C:\Users\NicoMak\NetLock-Root\NetLock-RMM-Server\obj\Debug\net8.0\NetLock RMM Server.genruntimeconfig.cache
 C:\Users\NicoMak\NetLock-Root\NetLock-RMM-Server\obj\Debug\net8.0\ref\NetLock_RMM_Server.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.CodeDom.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.Diagnostics.EventLog.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.Diagnostics.PerformanceCounter.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.Management.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Diagnostics.PerformanceCounter.dll
+C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Management.dll
