@@ -52,10 +52,6 @@ namespace NetLock_RMM_Server.Agent.Windows
                 string agent_version = device_identity.agent_version;
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "Communicated agent version", agent_version);
 
-                // Get assembly version
-                //Assembly assembly = Assembly.GetExecutingAssembly();
-                //FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-
                 string windowsAgentVersion = Application_Settings.version;
 
                 Logging.Handler.Debug("Agent.Windows.Version_Handler.Check_Version", "windowsAgentVersion", windowsAgentVersion);

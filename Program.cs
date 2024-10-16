@@ -47,6 +47,14 @@ var role_notification = builder.Configuration.GetValue<bool>("Kestrel:Roles:Noti
 var role_file = builder.Configuration.GetValue<bool>("Kestrel:Roles:File");
 var role_llm = builder.Configuration.GetValue<bool>("Kestrel:Roles:LLM");
 
+Roles.Comm = role_comm;
+Roles.Update = role_update;
+Roles.Trust = role_trust;
+Roles.Remote = role_remote;
+Roles.Notification = role_notification;
+Roles.File = role_file;
+Roles.LLM = role_llm;
+
 // Output OS
 Console.WriteLine("OS: " + RuntimeInformation.OSDescription);
 Console.WriteLine("Architecture: " + RuntimeInformation.OSArchitecture);
@@ -186,6 +194,9 @@ else
     Console.WriteLine("MySQL connection successful.");
     await NetLock_RMM_Server.MySQL.Handler.Update_Server_Information();
 }
+
+// Check Packages
+await Helper.Package_Provider.Check_Packages();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -1164,7 +1175,6 @@ app.MapGet("/admin/files/download/device", async (HttpContext context) =>
                     // Stream directly to the Response.body
                     await fileStream.CopyToAsync(context.Response.Body);
                 }
-
             }
         }
         else // If the device is not authorized, return the device status as unauthorized
@@ -1358,9 +1368,9 @@ if (role_update || role_trust)
 
             var fileName = (string)context.Request.RouteValues["fileName"];
 
-            var downloadPath = Path.Combine(Application_Paths._private_downloads_netlock, fileName);
+            var downloadPath = Path.Combine(Application_Paths._private_files_netlock, fileName);
 
-            // Verify roles
+            // Verify roles to make sure that the correct files are provided
             if (!role_update)
             {
                 if (fileName == "comm.package" || fileName == "health.package" || fileName == "remote.package" || fileName == "uninstaller.package")
@@ -1389,16 +1399,15 @@ if (role_update || role_trust)
                 return;
             }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(downloadPath, FileMode.Open))
+            using (var fileStream = new FileStream(downloadPath, FileMode.Open, FileAccess.Read))
             {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "application/octet-stream";
+                context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
 
-            context.Response.ContentType = "application/octet-stream";
-            context.Response.Headers.Add("Content-Disposition", $"attachment; filename={fileName}");
-            await memory.CopyToAsync(context.Response.Body);
+                // Stream directly to the Response.body
+                await fileStream.CopyToAsync(context.Response.Body);
+            }
         }
         catch (Exception ex)
         {
@@ -1407,7 +1416,7 @@ if (role_update || role_trust)
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("An error occurred while downloading the file.");
         }
-    }).WithName("private_download_netlock").WithOpenApi();
+    });
 }
 
 /*

@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
+using System.Data.Common;
 
 namespace NetLock_RMM_Server.MySQL
 {
@@ -88,6 +89,46 @@ namespace NetLock_RMM_Server.MySQL
             {
                 conn.Close();
             }
+        }
+
+        public static async Task<string> Quick_Reader(string query, string item)
+        {
+            Logging.Handler.Debug("Classes.MySQL.Handler.Quick_Reader", "query", query);
+            Logging.Handler.Debug("Classes.MySQL.Handler.Quick_Reader", "item", query);
+
+            string result = String.Empty;
+
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                MySqlCommand command = new MySqlCommand(query, conn);
+                Logging.Handler.Debug("Classes.MySQL.Handler.Quick_Reader", "MySQL_Prepared_Query", query); //Output prepared query
+
+                using (DbDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            result = reader[item].ToString() ?? String.Empty;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("Classes.MySQL.Handler.Quick_Reader", "query: " + query + " item: " + item, ex.Message);
+                conn.Close();
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return result;
         }
 
         public static async Task<bool> Update_Server_Information()
