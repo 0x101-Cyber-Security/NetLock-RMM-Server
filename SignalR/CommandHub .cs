@@ -64,7 +64,10 @@ namespace NetLock_RMM_Server.SignalR
             public string file_browser_path_move { get; set; } 
             public string file_browser_file_content { get; set; } 
             public string file_browser_file_guid { get; set; }
-            public string command { get; set; } 
+            public string remote_control_username { get; set; }
+            public string remote_control_screen_index { get; set; }
+            public string remote_control_mouse_xyz { get; set; }
+            public string command { get; set; } // used for service, task manager, screen capture
         }
          
         public class Root_Entity
@@ -416,6 +419,11 @@ namespace NetLock_RMM_Server.SignalR
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseTaskManagerAction", $"Response sent to admin client {admin_client_id}: {response}");
                     await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseTaskManagerAction", response);
                 }
+                else if (type == 4) // Remote Control
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControl", $"Response sent to admin client {admin_client_id}: {response}");
+                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", response);
+                }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
             }
@@ -442,6 +450,8 @@ namespace NetLock_RMM_Server.SignalR
                 string adminIdentityJson = String.Empty;
                 adminIdentityJson = Uri.UnescapeDataString(message);
                 Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "adminIdentityJson", adminIdentityJson);
+
+                Console.WriteLine(adminIdentityJson);
 
                 // Deserialize the JSON
                 Root_Entity rootData = new Root_Entity();
