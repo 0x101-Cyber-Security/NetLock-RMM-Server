@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\NetLock RMM Server.props" />
-</Project>
