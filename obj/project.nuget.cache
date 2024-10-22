@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "UUx2HvX3PFk=",
+  "dgSpecHash": "nTc/xGv4DsU=",
   "success": true,
   "projectFilePath": "C:\\Users\\NicoMak\\NetLock Root\\NetLock-RMM-Server\\NetLock RMM Server.csproj",
   "expectedPackageFiles": [
@@ -10,12 +10,12 @@
     "C:\\Users\\NicoMak\\.nuget\\packages\\llamasharp\\0.16.0\\llamasharp.0.16.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\llamasharp.backend.cpu\\0.16.0\\llamasharp.backend.cpu.0.16.0.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\mcmaster.aspnetcore.kestrel.certificates\\1.0.0\\mcmaster.aspnetcore.kestrel.certificates.1.0.0.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.7\\microsoft.aspnetcore.connections.abstractions.8.0.7.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.10\\microsoft.aspnetcore.connections.abstractions.8.0.10.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.7\\microsoft.aspnetcore.openapi.8.0.7.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.signalr.common\\8.0.7\\microsoft.aspnetcore.signalr.common.8.0.7.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.aspnetcore.signalr.common\\8.0.10\\microsoft.aspnetcore.signalr.common.8.0.10.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
-    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.features\\8.0.7\\microsoft.extensions.features.8.0.7.nupkg.sha512",
+    "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.features\\8.0.10\\microsoft.extensions.features.8.0.10.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.1\\microsoft.extensions.logging.abstractions.8.0.1.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\NicoMak\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",

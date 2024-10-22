@@ -24,6 +24,7 @@ using NetLock_RMM_Server.LLM;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.InteropServices;
 using NetLock_RMM_Server.Configuration;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -203,12 +204,11 @@ await Helper.Package_Provider.Check_Packages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMvc();
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
-builder.Services.AddSingleton<CommandHub>();
 builder.Services.AddSignalR(options =>
 {
     options.MaximumReceiveMessageSize = 102400000; // Increase maximum message size to 100 MB
 });
+
 
 // Add the LLaMa model service as a singleton. Currently disabled because in testings using ANY llm was just to CPU intensive. As most servers dont have a GPU, implementation needs to be postboned to a unknown time. Might find a solution in future
 //builder.Services.AddSingleton<LLaMaService>();
@@ -283,6 +283,10 @@ app.UseWhen(context => context.Request.Path.StartsWithSegments("/commandHub"), a
 });
 
 app.MapHub<CommandHub>("/commandHub");
+
+// Initialisiere das Singleton mit dem HubContext
+var hubContext = app.Services.GetService<IHubContext<CommandHub>>();
+CommandHubSingleton.Instance.Initialize(hubContext);
 
 //API URLs*
 
@@ -1471,6 +1475,130 @@ if (role_llm)
     });
 }
 */
+
+// Temporary endpoint to bridge the remote control, due to issues related with signalr causing instability on client side
+
+if (role_remote)
+{
+    //Get policy
+    app.MapPost("/Agent/Windows/Remote/Command", async (HttpContext context, IHubContext<CommandHub> hubContext) =>
+    {
+        try
+        {
+            Console.WriteLine("Request received.");
+            Logging.Handler.Debug("POST Request Mapping", "/Agent/Windows/Remote/Command", "Request received.");
+
+            // Add headers
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'"); // protect against XSS 
+
+            // Get the remote IP address from the X-Forwarded-For header
+            string ip_address_external = context.Request.Headers.TryGetValue("X-Forwarded-For", out var headerValue) ? headerValue.ToString() : context.Connection.RemoteIpAddress.ToString();
+
+            // Verify package guid
+            bool hasPackageGuid = context.Request.Headers.TryGetValue("Package_Guid", out StringValues package_guid);
+
+            if (hasPackageGuid == false)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized.");
+                return;
+            }
+            else
+            {
+                bool package_guid_status = await Verify_NetLock_Package_Configurations_Guid(package_guid);
+
+                if (package_guid_status == false)
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized.");
+                    return;
+                }
+            }
+
+            // Read the JSON data
+            string json;
+            using (StreamReader reader = new StreamReader(context.Request.Body))
+            {
+                json = await reader.ReadToEndAsync() ?? string.Empty;
+            }
+
+            //Console.WriteLine("Request: " + json);
+
+            // Verify the device
+            string device_status = await Authentification.Verify_Device(json, ip_address_external, true);
+
+            Console.WriteLine("Device status: " + device_status);
+
+            // Check if the device is authorized, synced, or not synced. If so, get the policy
+            if (device_status == "authorized" || device_status == "synced" || device_status == "not_synced")
+            {
+                string responseId = string.Empty;
+                string result = string.Empty;
+
+                using (JsonDocument document = JsonDocument.Parse(json))
+                {
+                    // Get the root element
+                    JsonElement root = document.RootElement;
+
+                    // Access the "remote_control" section
+                    JsonElement remoteControlElement = root.GetProperty("remote_control");
+
+                    // Extract "response_id" and "result"
+                    responseId = remoteControlElement.GetProperty("response_id").GetString();
+                    result = remoteControlElement.GetProperty("result").GetString();
+
+                    // Output the values
+                    Console.WriteLine($"Response ID: {responseId}");
+                    //Console.WriteLine($"Result: {result}");
+                }
+
+                //await ReceiveClientResponse(responseId, result);
+
+                string admin_identity_info_json = CommandHubSingleton.Instance.GetAdminIdentity(responseId);
+
+                string admin_client_id = String.Empty;
+                string admin_username = String.Empty;
+                string device_id = String.Empty;
+                string command = String.Empty;
+                int type = 0;
+                int file_browser_command = 0;
+
+                // Deserialisierung des gesamten JSON-Strings
+                using (JsonDocument document = JsonDocument.Parse(admin_identity_info_json))
+                {
+                    // Get the admin client ID from the JSON
+                    JsonElement admin_client_id_element = document.RootElement.GetProperty("admin_client_id");
+                    admin_client_id = admin_client_id_element.ToString();
+                }
+
+                Console.WriteLine("Admin client ID: " + admin_client_id);
+
+                await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", result);
+
+                // Remove the response ID from the dictionary
+                CommandHubSingleton.Instance.RemoveAdminCommand(responseId);
+
+                Console.WriteLine("Response sent.");
+
+                // Return the device status
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsync("ok");
+            }
+            else // If the device is not authorized, return the device status as unauthorized
+            {
+                context.Response.StatusCode = 403;
+                await context.Response.WriteAsync(device_status);
+            }
+        }
+        catch (Exception ex)
+        { 
+            Logging.Handler.Error("POST Request Mapping", "/Agent/Windows/Remote/Command", ex.ToString());
+
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync("Invalid request.");
+        }
+    });
+}
 
 //Start server
 app.Run();

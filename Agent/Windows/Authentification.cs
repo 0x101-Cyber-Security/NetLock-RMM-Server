@@ -47,6 +47,7 @@ namespace NetLock_RMM_Server.Agent.Windows
         {
             public Device_Identity? device_identity { get; set; }
             public Admin_Identity? admin_identity { get; set; }
+            public Admin_Identity? remote_control { get; set; }
         }
 
         public static async Task<string> Verify_Device(string json, string ip_address_external, bool update)

@@ -80,18 +80,10 @@ namespace NetLock_RMM_Server.SignalR
             public Command? command { get; set; }
         }
 
-        private readonly ConcurrentDictionary<string, string> _clientConnections;
-        private readonly ConcurrentDictionary<string, string> _adminCommands = new ConcurrentDictionary<string, string>();
+        //private readonly ConcurrentDictionary<string, string> _clientConnections;
+        //private readonly ConcurrentDictionary<string, string> _adminCommands = new ConcurrentDictionary<string, string>();
 
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _responseTasks;
-
-
-        public CommandHub()
-        {
-            _clientConnections = ConnectionManager.Instance.ClientConnections;
-            //_responseTasks = new ConcurrentDictionary<string, TaskCompletionSource<string>>();
-
-        }
+        //private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _responseTasks;
 
         public override Task OnConnectedAsync()
         {
@@ -127,8 +119,8 @@ namespace NetLock_RMM_Server.SignalR
                     Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Admin identity: " + decodedIdentityJson);
                 }
 
-                // Save clientId and any other relevant data in your data structure
-                _clientConnections.TryAdd(clientId, decodedIdentityJson);    
+                // Save clientId and any other relevant data in the Singleton's data structure
+                CommandHubSingleton.Instance.AddClientConnection(clientId, decodedIdentityJson);
             }
             catch (Exception ex)
             {
@@ -153,14 +145,14 @@ namespace NetLock_RMM_Server.SignalR
                 var clientId = Context.ConnectionId;
 
                 // Remove the client from the data structure when it logs out
-                _clientConnections.TryRemove(clientId, out _);
+                CommandHubSingleton.Instance._clientConnections.TryRemove(clientId, out _);
 
                 // Remove the client from the admin commands dictionary
-                foreach (var adminCommand in _adminCommands)
+                foreach (var adminCommand in CommandHubSingleton.Instance._adminCommands)
                 {
                     if (adminCommand.Value == clientId)
                     {
-                        _adminCommands.TryRemove(adminCommand.Key, out _);
+                        CommandHubSingleton.Instance.RemoveClientConnection(adminCommand.Key);
                     }
                 }
 
@@ -174,7 +166,7 @@ namespace NetLock_RMM_Server.SignalR
                 }*/
 
                 // List all connected clients
-                foreach (var client in _clientConnections)
+                foreach (var client in CommandHubSingleton.Instance._clientConnections)
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "OnDisconnectedAsync", $"Connected clients: {client.Key}, {client.Value}");
                 }
@@ -194,12 +186,12 @@ namespace NetLock_RMM_Server.SignalR
                 Logging.Handler.Debug("SignalR CommandHub", "Get_Device_ClientID", $"Device: {device_name}, Location: {location_guid}, Tenant: {tenant_guid}");
 
                 // List all connected clients
-                foreach (var client in _clientConnections)
+                foreach (var client in CommandHubSingleton.Instance._clientConnections)
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "MessageReceivedFromWebconsole", $"Connected clients: {client.Key}, {client.Value}");
                 }
 
-                var clientId = _clientConnections.FirstOrDefault(x =>
+                var clientId = CommandHubSingleton.Instance._clientConnections.FirstOrDefault(x =>
                 {
                     try
                     {
@@ -229,20 +221,24 @@ namespace NetLock_RMM_Server.SignalR
             }
         }
 
-        public async Task<string> Get_Admin_ClientId_By_ResponseId(string responseId)
+
+
+        public static async Task<string> Get_Admin_ClientId_By_ResponseId(string responseId)
         {
             try
             {
                 // list all connected admin clients
-                foreach (var client in _adminCommands)
+                foreach (var client in CommandHubSingleton.Instance._adminCommands)
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "Get_Admin_ClientId_By_ResponseId", $"Connected admin clients: {client.Key}, {client.Value}");
                 }
 
-                if (_adminCommands.TryGetValue(responseId, out string admin_identity_info_json))
+                if (CommandHubSingleton.Instance._adminCommands.TryGetValue(responseId, out string admin_identity_info_json))
                 {
                     return admin_identity_info_json;
                 }
+
+                Console.WriteLine("responseid not found: " + responseId);
 
                 return null; // If the responseId is not found
             }
@@ -280,7 +276,9 @@ namespace NetLock_RMM_Server.SignalR
                 var responseId = Guid.NewGuid().ToString();
 
                 // Save responseId & admin_identity_info_json
-                _adminCommands.TryAdd(responseId, admin_identity_info_json);
+                CommandHubSingleton.Instance.AddAdminCommand(responseId, admin_identity_info_json);
+
+                Console.WriteLine("added responseId to admin commands: " + responseId);
 
                 // Add the responseId to the command JSON
                 command_json = AddResponseIdToJson(command_json, responseId);
@@ -288,7 +286,7 @@ namespace NetLock_RMM_Server.SignalR
                 Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Modified command JSON with responseId: {command_json}");
 
                 // Send the command to the client
-                await Clients.Client(client_id).SendAsync("SendMessageToClientAndWaitForResponse", command_json);
+                await CommandHubSingleton.Instance.HubContext.Clients.Client(client_id).SendAsync("SendMessageToClientAndWaitForResponse", command_json);
 
                 Logging.Handler.Debug("SignalR CommandHub", "SendMessageToClientAndWaitForResponse", $"Command sent to client {client_id}: {command_json}");
             }
@@ -306,8 +304,24 @@ namespace NetLock_RMM_Server.SignalR
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Received response from client. ResponseId: {responseId} response: {response}");
                 Console.WriteLine("received responseId:" + responseId);
 
+                if (String.IsNullOrEmpty(responseId) || String.IsNullOrEmpty(response))
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", "ResponseId or response is empty.");
+                    Console.WriteLine("ResponseId or response is empty.");
+                    return;
+                }
+
                 // Get the admin client ID from the dictionary
                 string admin_identity_info_json = await Get_Admin_ClientId_By_ResponseId(responseId);
+
+                // Output all admin client information
+                foreach (var client in CommandHubSingleton.Instance._adminCommands)
+                {
+                    Console.WriteLine("admin client info: " + client.Key + " " + client.Value);
+                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Connected admin clients: {client.Key}, {client.Value}");
+                }
+
+                Console.WriteLine(admin_identity_info_json);
 
                 string admin_client_id = String.Empty;
                 string admin_username = String.Empty;
@@ -386,78 +400,84 @@ namespace NetLock_RMM_Server.SignalR
                 // Send the response back to the admin client
                 // 0 = remote shell, 1 = file browser
                 if (type == 0) // remote shell
-                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
+                    await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteShell", response);
                 else if (type == 1) // file browser
                 {
                     if (file_browser_command == 0) // drives
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDrives", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDrives", response);
                     else if (file_browser_command == 1) // index
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserIndex", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserIndex", response);
                     else if (file_browser_command == 2) // create dir
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserCreateDirectory", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateDirectory", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateDirectory", response);
                     }
                     else if (file_browser_command == 3) // delete dir
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDeleteDirectory", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteDirectory", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteDirectory", response);
                     }
                     else if (file_browser_command == 4) // move dir
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserMoveDirectory", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveDirectory", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveDirectory", response);
                     }
                     else if (file_browser_command == 5) // rename dir
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameDirectory", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameDirectory", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameDirectory", response);
                     }
                     else if (file_browser_command == 6) // create file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserCreateFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserCreateFile", response);
                     }
                     else if (file_browser_command == 7) // delete file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDeleteFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDeleteFile", response);
                     }
                     else if (file_browser_command == 8) // move file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserMoveFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserMoveFile", response);
                     }
                     else if (file_browser_command == 9) // rename file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserRenameFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserRenameFile", response);
                     }
                     else if (file_browser_command == 10) // upload file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserUploadFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserUploadFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserUploadFile", response);
                     }
                     else if (file_browser_command == 11) // download file
                     {
                         Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteFileBrowserDownloadFile", $"Response sent to admin client {admin_client_id}: {response}");
-                        await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDownloadFile", response);
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteFileBrowserDownloadFile", response);
                     }
                 }
                 else if (type == 2) // Service Action
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseServiceAction", $"Response sent to admin client {admin_client_id}: {response}");
-                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseServiceAction", response);
+                    await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseServiceAction", response);
                 }
                 else if (type == 3) // Task Manager Action
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseTaskManagerAction", $"Response sent to admin client {admin_client_id}: {response}");
-                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseTaskManagerAction", response);
+                    await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseTaskManagerAction", response);
                 }
                 else if (type == 4) // Remote Control
                 {
-                    Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControl", $"Response sent to admin client {admin_client_id}: {response}");
-                    await Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", response);
+                    Console.WriteLine("Remote Control");
+
+                    Console.WriteLine(admin_client_id);
+
+                    Console.WriteLine("length: " + response.Length);
+
+                    //Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControl", $"Response sent to admin client {admin_client_id}: {response}");
+                    await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", "test");
                 }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
@@ -469,10 +489,9 @@ namespace NetLock_RMM_Server.SignalR
             finally
             {
                 // Remove the responseId from the dictionary
-                _adminCommands.TryRemove(responseId, out _);
+                CommandHubSingleton.Instance._adminCommands.TryRemove(responseId, out _);
             }
         }
-
 
         // Method to receive commands from the webconsole
         public async Task MessageReceivedFromWebconsole(string message)
