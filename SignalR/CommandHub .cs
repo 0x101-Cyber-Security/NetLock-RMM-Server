@@ -66,7 +66,9 @@ namespace NetLock_RMM_Server.SignalR
             public string file_browser_file_guid { get; set; }
             public string remote_control_username { get; set; }
             public string remote_control_screen_index { get; set; }
+            public string remote_control_mouse_action { get; set; }
             public string remote_control_mouse_xyz { get; set; }
+            public string remote_control_keyboard_input { get; set; }
             public string command { get; set; } // used for service, task manager, screen capture
         }
          
@@ -96,6 +98,8 @@ namespace NetLock_RMM_Server.SignalR
             try
             {
                 Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Client connected");
+
+                Console.WriteLine("Client connected");
 
                 var clientId = Context.ConnectionId;
 
@@ -140,10 +144,40 @@ namespace NetLock_RMM_Server.SignalR
             {
                 Logging.Handler.Debug("SignalR CommandHub", "OnDisconnectedAsync", "Client disconnected");
 
+                Console.WriteLine("Client disconnected");
+
+                Console.WriteLine(DateTime.Now);
+
+                Console.WriteLine("Client disconnected" + exception.Message);
+
                 var clientId = Context.ConnectionId;
 
                 // Remove the client from the data structure when it logs out
                 _clientConnections.TryRemove(clientId, out _);
+
+                // Remove the client from the admin commands dictionary
+                foreach (var adminCommand in _adminCommands)
+                {
+                    if (adminCommand.Value == clientId)
+                    {
+                        _adminCommands.TryRemove(adminCommand.Key, out _);
+                    }
+                }
+
+                // Remove the client from the response tasks dictionary
+                /*foreach (var responseTask in _responseTasks)
+                {
+                    if (responseTask.Value.Task.IsCompleted)
+                    {
+                        _responseTasks.TryRemove(responseTask.Key, out _);
+                    }
+                }*/
+
+                // List all connected clients
+                foreach (var client in _clientConnections)
+                {
+                    Logging.Handler.Debug("SignalR CommandHub", "OnDisconnectedAsync", $"Connected clients: {client.Key}, {client.Value}");
+                }
             }
             catch (Exception ex)
             {
@@ -270,7 +304,8 @@ namespace NetLock_RMM_Server.SignalR
             try
             {
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Received response from client. ResponseId: {responseId} response: {response}");
-                
+                Console.WriteLine("received responseId:" + responseId);
+
                 // Get the admin client ID from the dictionary
                 string admin_identity_info_json = await Get_Admin_ClientId_By_ResponseId(responseId);
 
@@ -450,8 +485,6 @@ namespace NetLock_RMM_Server.SignalR
                 string adminIdentityJson = String.Empty;
                 adminIdentityJson = Uri.UnescapeDataString(message);
                 Logging.Handler.Debug("SignalR CommandHub.MessageReceivedFromWebconsole", "adminIdentityJson", adminIdentityJson);
-
-                Console.WriteLine(adminIdentityJson);
 
                 // Deserialize the JSON
                 Root_Entity rootData = new Root_Entity();
