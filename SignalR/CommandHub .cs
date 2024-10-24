@@ -30,9 +30,11 @@ namespace NetLock_Server.SignalR
             public string? last_boot { get; set; }
             public string? timezone { get; set; }
             public string? cpu { get; set; }
+            public string? cpu_usage { get; set; }
             public string? mainboard { get; set; }
             public string? gpu { get; set; }
             public string? ram { get; set; }
+            public string? ram_usage { get; set; }
             public string? tpm { get; set; }
             // public string? environment_variables { get; set; }
         }

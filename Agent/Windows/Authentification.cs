@@ -13,27 +13,28 @@ namespace NetLock_Server.Agent.Windows
     {
         public class Device_Identity
         {
-            public string? agent_version { get; set; }
-            public string? package_guid { get; set; }
-            public string? device_name { get; set; }
-            public string? location_guid { get; set; }
-            public string? tenant_guid { get; set; }
-            public string? access_key { get; set; }
-            public string? hwid { get; set; }
-            public string? ip_address_internal { get; set; }
-            public string? operating_system { get; set; }
-            public string? domain { get; set; }
-            public string? antivirus_solution { get; set; }
-            public string? firewall_status { get; set; }
-            public string? architecture { get; set; }
-            public string? last_boot { get; set; }
-            public string? timezone { get; set; }
-            public string? cpu { get; set; }
-            public string? mainboard { get; set; }
-            public string? gpu { get; set; }
-            public string? ram { get; set; }
-            public string? tpm { get; set; }
-            // public string? environment_variables { get; set; }
+            public string agent_version { get; set; }
+            public string package_guid { get; set; }
+            public string device_name { get; set; }
+            public string location_guid { get; set; }
+            public string tenant_guid { get; set; }
+            public string access_key { get; set; }
+            public string hwid { get; set; }
+            public string ip_address_internal { get; set; }
+            public string operating_system { get; set; }
+            public string domain { get; set; }
+            public string antivirus_solution { get; set; }
+            public string firewall_status { get; set; }
+            public string architecture { get; set; }
+            public string last_boot { get; set; }
+            public string timezone { get; set; }
+            public string cpu { get; set; }
+            public string cpu_usage { get; set; }
+            public string mainboard { get; set; }
+            public string gpu { get; set; }
+            public string ram { get; set; }
+            public string ram_usage { get; set; }
+            public string tpm { get; set; }
         }
 
         public class Admin_Identity
@@ -155,9 +156,11 @@ namespace NetLock_Server.Agent.Windows
                         "`last_boot`, " +
                         "`timezone`, " +
                         "`cpu`, " +
+                        "`cpu_usage`, " +
                         "`mainboard`, " +
                         "`gpu`, " +
                         "`ram`, " +
+                        "`ram_usage`, " +
                         "`tpm`, " +
                         "`environment_variables`) " +
                         "VALUES " +
@@ -180,9 +183,11 @@ namespace NetLock_Server.Agent.Windows
                         "@last_boot, " +
                         "@timezone, " +
                         "@cpu, " +
+                        "@cpu_usage, " +
                         "@mainboard, " +
                         "@gpu, " +
                         "@ram, " +
+                        "@ram_usage, " +
                         "@tpm, " +
                         "@environment_variables);";
 
@@ -207,9 +212,11 @@ namespace NetLock_Server.Agent.Windows
                     cmd.Parameters.AddWithValue("@last_boot", device_identity.last_boot);
                     cmd.Parameters.AddWithValue("@timezone", device_identity.timezone);
                     cmd.Parameters.AddWithValue("@cpu", device_identity.cpu);
+                    cmd.Parameters.AddWithValue("@cpu_usage", device_identity.cpu_usage);
                     cmd.Parameters.AddWithValue("@mainboard", device_identity.mainboard);
                     cmd.Parameters.AddWithValue("@gpu", device_identity.gpu);
                     cmd.Parameters.AddWithValue("@ram", device_identity.ram);
+                    cmd.Parameters.AddWithValue("@ram_usage", device_identity.ram_usage);
                     cmd.Parameters.AddWithValue("@tpm", device_identity.tpm);
                     cmd.Parameters.AddWithValue("@environment_variables", "");
 
@@ -251,9 +258,11 @@ namespace NetLock_Server.Agent.Windows
                         "`last_boot` = @last_boot, " +
                         "`timezone` = @timezone, " +
                         "`cpu` = @cpu, " +
+                        "`cpu_usage` = @cpu_usage, " +
                         "`mainboard` = @mainboard, " +
                         "`gpu` = @gpu, " +
                         "`ram` = @ram, " +
+                        "`ram_usage` = @ram_usage, " +
                         "`tpm` = @tpm, " +
                         "`environment_variables` = @environment_variables, " +
                         "`synced` = @synced " +
@@ -278,9 +287,11 @@ namespace NetLock_Server.Agent.Windows
                     cmd.Parameters.AddWithValue("@last_boot", device_identity.last_boot);
                     cmd.Parameters.AddWithValue("@timezone", device_identity.timezone);
                     cmd.Parameters.AddWithValue("@cpu", device_identity.cpu);
+                    cmd.Parameters.AddWithValue("@cpu_usage", device_identity.cpu_usage);
                     cmd.Parameters.AddWithValue("@mainboard", device_identity.mainboard);
                     cmd.Parameters.AddWithValue("@gpu", device_identity.gpu);
                     cmd.Parameters.AddWithValue("@ram", device_identity.ram);
+                    cmd.Parameters.AddWithValue("@ram_usage", device_identity.ram_usage);
                     cmd.Parameters.AddWithValue("@tpm", device_identity.tpm);
                     cmd.Parameters.AddWithValue("@environment_variables", "");
                     cmd.Parameters.AddWithValue("@synced", synced);

@@ -30,32 +30,47 @@ namespace NetLock_Server.Events
 
                 Logging.Handler.Debug("Events.Sender.Smtp", "MySQL_Prepared_Query", query);
 
+                int id = 0;
+
                 using (DbDataReader reader = await cmd.ExecuteReaderAsync())
                 {
                     if (reader.HasRows)
                     {
                         while (await reader.ReadAsync())
                         {
-                            string notification_json = reader["notification_json"].ToString() ?? String.Empty;
+                            try
+                            {
+                                id = reader.GetInt32(0);
 
-                            // Extract JSON
-                            Notifications notifications = JsonSerializer.Deserialize<Notifications>(notification_json);
+                                string notification_json = reader["notification_json"].ToString() ?? String.Empty;
 
-                            if (type == "mail_status" && notifications.mail)
-                            {
-                                await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "mail_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                // Extract JSON
+                                Notifications notifications = JsonSerializer.Deserialize<Notifications>(notification_json);
+
+                                if (type == "mail_status" && notifications.mail)
+                                {
+                                    await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "mail_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                }
+                                else if (type == "ms_teams_status" && notifications.microsoft_teams)
+                                {
+                                    await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "microsoft_teams_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                }
+                                else if (type == "telegram_status" && notifications.telegram)
+                                {
+                                    await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "telegram_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                }
+                                else if (type == "ntfy_sh_status" && notifications.ntfy_sh)
+                                {
+                                    await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "ntfy_sh_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                }
                             }
-                            else if (type == "ms_teams_status" && notifications.microsoft_teams)
+                            catch 
                             {
-                                await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "microsoft_teams_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
-                            }
-                            else if (type == "telegram_status" && notifications.telegram)
-                            {
-                                await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "telegram_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
-                            }
-                            else if (type == "ntfy_sh_status" && notifications.ntfy_sh)
-                            {
-                                await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "ntfy_sh_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
+                                Console.WriteLine("Error: " + id);
+                                // if it fails, the the event as read to prevent future execution issues
+                                await MySQL.Handler.Execute_Command("UPDATE events SET mail_status = '1', ms_teams_status = '1', telegram_status = '1', ntfy_sh_status = '1' WHERE id = " + id + ";");
+
+                                continue;
                             }
                         }
                     }
@@ -63,7 +78,7 @@ namespace NetLock_Server.Events
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Events.Sender.Smtp", "MySQL_Query", ex.Message);
+                Logging.Handler.Error("Events.Sender.Smtp", "MySQL_Query", ex.ToString());
             }
             finally
             {

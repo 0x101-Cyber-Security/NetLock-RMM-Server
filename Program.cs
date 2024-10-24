@@ -923,7 +923,11 @@ if (role_file)
             // Add security headers
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'");
 
+<<<<<<< Updated upstream
             // Verify API key
+=======
+            // Get api key | no api key required
+>>>>>>> Stashed changes
             bool hasApiKey = context.Request.Headers.TryGetValue("x-api-key", out StringValues files_api_key);
             if (!hasApiKey || !await NetLock_RMM_Server.Files.Handler.Verify_Api_Key(files_api_key))
             {
