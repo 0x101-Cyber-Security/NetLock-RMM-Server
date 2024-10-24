@@ -4,8 +4,8 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 -->
 <Project>
   <PropertyGroup>
-    <_PublishTargetUrl>C:\Users\NicoMak\NetLock Root\NetLock-RMM-Server\bin\Release\net8.0\publish\</_PublishTargetUrl>
-    <History>True|2024-09-01T20:19:03.2127339Z||;</History>
+    <_PublishTargetUrl>C:\Users\NicoMak\NetLock-Root\NetLock-RMM-Server\bin\Release\net8.0\publish\</_PublishTargetUrl>
+    <History>True|2024-10-09T13:21:07.3558227Z;True|2024-09-01T22:19:03.2127339+02:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

@@ -2,10 +2,10 @@
 using MySqlConnector;
 using System.Text.Json;
 using System.Threading.Tasks;
-using NetLock_Server.Agent.Windows;
+using NetLock_RMM_Server.Agent.Windows;
 using System.Runtime.CompilerServices;
 
-namespace NetLock_Server.Events
+namespace NetLock_RMM_Server.Events
 {
     public class Sender
     {
@@ -19,18 +19,17 @@ namespace NetLock_Server.Events
 
         public static async Task Smtp(string type, string table)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
                 await conn.OpenAsync();
 
-                string query = "SELECT * FROM `events` WHERE " + type + " = 0;";
+                string query = "SELECT * FROM `events` WHERE @type = 0;";
                 MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@type", type);
 
                 Logging.Handler.Debug("Events.Sender.Smtp", "MySQL_Prepared_Query", query);
-
-                int id = 0;
 
                 using (DbDataReader reader = await cmd.ExecuteReaderAsync())
                 {
@@ -40,8 +39,6 @@ namespace NetLock_Server.Events
                         {
                             try
                             {
-                                id = reader.GetInt32(0);
-
                                 string notification_json = reader["notification_json"].ToString() ?? String.Empty;
 
                                 // Extract JSON
@@ -64,13 +61,11 @@ namespace NetLock_Server.Events
                                     await Check_Notifications(reader["id"].ToString() ?? String.Empty, type, "ntfy_sh_notifications", reader["severity"].ToString() ?? String.Empty, reader["reported_by"].ToString() ?? String.Empty, reader["_event"].ToString() ?? String.Empty, reader["description"].ToString() ?? String.Empty);
                                 }
                             }
-                            catch 
+                            catch (Exception ex)
                             {
-                                Console.WriteLine("Error: " + id);
-                                // if it fails, the the event as read to prevent future execution issues
-                                await MySQL.Handler.Execute_Command("UPDATE events SET mail_status = '1', ms_teams_status = '1', telegram_status = '1', ntfy_sh_status = '1' WHERE id = " + id + ";");
-
-                                continue;
+                                // Set all notifications to true if an error occurs
+                                await MySQL.Handler.Execute_Command("UPDATE `events` SET mail_status = 1, ms_teams_status = 1, telegram_status = 1, ntfy_sh_status = 1 WHERE id = " + reader["id"].ToString() + ";");
+                                Logging.Handler.Error("Events.Sender.Smtp", "MySQL_Query", ex.ToString());
                             }
                         }
                     }
@@ -78,7 +73,7 @@ namespace NetLock_Server.Events
             }
             catch (Exception ex)
             {
-                Logging.Handler.Error("Events.Sender.Smtp", "MySQL_Query", ex.ToString());
+                Logging.Handler.Error("Events.Sender.Smtp", "MySQL_Query", ex.Message);
             }
             finally
             {
@@ -88,7 +83,7 @@ namespace NetLock_Server.Events
 
         private static async Task Check_Notifications(string id, string type, string table, string severity, string reported_by, string _event, string description)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {

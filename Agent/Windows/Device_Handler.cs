@@ -2,19 +2,18 @@
 using System.Data.Common;
 using System.Diagnostics;
 using System.Text.Json;
-using static NetLock_Server.Agent.Windows.Authentification;
-using static NetLock_Server.Agent.Windows.Device_Handler;
+using static NetLock_RMM_Server.Agent.Windows.Authentification;
+using static NetLock_RMM_Server.Agent.Windows.Device_Handler;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Device_Handler
     {
-        public class Device_Identity
+        public class Device_Identity_Entity
         {
             public string? agent_version { get; set; }
-            public string? package_guid { get; set; }
             public string? device_name { get; set; }
-            public string? location_guid { get; set; }
+            public string? location_guid{ get; set; }
             public string? tenant_guid { get; set; }
             public string? access_key { get; set; }
             public string? hwid { get; set; }
@@ -33,6 +32,7 @@ namespace NetLock_Server.Agent.Windows
             public string? ram { get; set; }
             public string? ram_usage { get; set; }
             public string? tpm { get; set; }
+            //public string? environment_variables { get; set; }
         }
 
         public class Content_Entity
@@ -49,20 +49,20 @@ namespace NetLock_Server.Agent.Windows
 
         public class Root_Entity
         {
-            public Device_Identity? device_identity { get; set; }
+            public Device_Identity_Entity? device_identity { get; set; }
             public Content_Entity? content { get; set; }
         }
 
 
         public static async Task<string> Update_Device_Information(string json)
         {
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
             
             try
             {
                 //Extract JSON
                 Root_Entity rootData = JsonSerializer.Deserialize<Root_Entity>(json);
-                Device_Identity device_identity = rootData.device_identity;
+                Device_Identity_Entity device_identity = rootData.device_identity;
                 //Content_Entity content = rootData.content;
 
                 string device_identity_json_string = String.Empty;
@@ -273,7 +273,7 @@ namespace NetLock_Server.Agent.Windows
                 }
                 catch (Exception ex)
                 {
-                    Logging.Handler.Error("NetLock_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
+                    Logging.Handler.Error("NetLock_RMM_Server.Modules.Authentification.Verify_Device", "Result", ex.Message);
                 }
 
                 string device_information_general_history_execute_query = "INSERT INTO `device_information_general_history` (`device_id`, `date`, `ip_address_internal`, `ip_address_external`, `network_adapters`, `json`) VALUES (@device_id, @date, @ip_address_internal, @ip_address_external, @network_adapters, @json);";

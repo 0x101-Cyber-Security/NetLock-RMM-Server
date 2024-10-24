@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using System.Text.Json;
 
-namespace NetLock_Server.SignalR.Webconsole
+namespace NetLock_RMM_Server.SignalR.Webconsole
 {
     public class Handler
     {

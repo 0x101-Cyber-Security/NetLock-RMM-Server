@@ -1,7 +1,4 @@
-<<<<<<< Updated upstream
-bin
-=======
 /.vs/
 /bin/
 /obj/
->>>>>>> Stashed changes
+/LLM/

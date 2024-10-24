@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace NetLock_Server.MySQL
+namespace NetLock_RMM_Server.MySQL
 {
     public class Config
     {
@@ -27,40 +27,6 @@ namespace NetLock_Server.MySQL
         public class RootData
         {
             public MySQL MySQL { get; set; }
-        }
-
-        // Read appssettings.json file and load MySQL configuration
-        public static async Task<string> Get_Connection_String()
-        {
-            try
-            {
-                // Read appssettings.json file
-                string json = await File.ReadAllTextAsync("appsettings.json");
-
-                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "json", json);
-
-                // Deserialize JSON string
-                RootData rootData = JsonSerializer.Deserialize<RootData>(json);
-
-                // Get MySQL configuration
-                string server = rootData.MySQL.Server;
-                int port = rootData.MySQL.Port;
-                string database = rootData.MySQL.Database;
-                string user = rootData.MySQL.User;
-                string password = rootData.MySQL.Password;
-                string sslMode = rootData.MySQL.SslMode;
-                string additionalConnectionParameters = rootData.MySQL.AdditionalConnectionParameters;
-
-                // Return MySQL configuration
-                string connectionString = $"Server={server};Port={port};Database={database};User={user};Password={password};SslMode={sslMode};{additionalConnectionParameters}";
-                //Logging.Handler.Debug("Classes.MySQL.MySQLConfig.Get_Connection_String", "connectionString", connectionString);
-                return connectionString;
-            }
-            catch (Exception ex)
-            {
-                Logging.Handler.Error("Classes.MySQL.MySQLConfig.Get_Connection_String", "General error", ex.ToString());
-                return String.Empty;
-            }
         }
 
         // Read appsettings.json file and get mysql database name

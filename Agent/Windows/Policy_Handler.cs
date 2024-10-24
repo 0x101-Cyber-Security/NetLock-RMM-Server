@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using System.Text.Json;
 using System.Security;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Policy_Handler
     {
@@ -194,7 +194,7 @@ namespace NetLock_Server.Agent.Windows
                 Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "location_name", location_name);
                 Logging.Handler.Debug("Agent.Windows.Policy_Handler.Get_Policy", "tenant_name", tenant_name);
                 
-                MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
                 await conn.OpenAsync();
 
                 // Get device group

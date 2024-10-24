@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Runtime.InteropServices;
 
-namespace NetLock_Server
+namespace NetLock_RMM_Server
 {
     public class Application_Paths
     {
@@ -10,15 +10,10 @@ namespace NetLock_Server
 
         public static string _public_uploads_user = Path.Combine(GetCurrentDirectory(), "www", "public", "uploads", "user");
         public static string _public_downloads_user = Path.Combine(GetCurrentDirectory(), "www", "public", "downloads", "user");
-
-        public static string _private_downloads_netlock = Path.Combine(GetCurrentDirectory(), "www", "private", "downloads", "netlock");
         
         public static string _private_uploads_remote_temp = Path.Combine(GetCurrentDirectory(), "www", "private", "uploads", "remote", "temp");
         public static string _private_downloads_remote_temp = Path.Combine(GetCurrentDirectory(), "www", "private", "downloads", "remote", "temp");
 
-<<<<<<< Updated upstream
-        public static string _private_files_admin = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "admin");
-=======
         public static string _private_files = Path.Combine(GetCurrentDirectory(), "www", "private", "files");
         //public static string _private_files_admin = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "admin");
         public static string _private_files_admin_db_friendly = Path.Combine(GetCurrentDirectory(), "www", "private", "files");
@@ -27,7 +22,7 @@ namespace NetLock_Server
 
         public static string _private_files_netlock = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "netlock");
         public static string _private_files_netlock_temp = Path.Combine(GetCurrentDirectory(), "www", "private", "files", "netlock", "temp");
->>>>>>> Stashed changes
+
 
         // URLs
         public static string redirect_path = "/";

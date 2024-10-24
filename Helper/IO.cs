@@ -1,10 +1,10 @@
 ﻿using MySqlConnector;
-using NetLock_Server;
+using NetLock_RMM_Server;
 using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
-namespace NetLock_RMM_Server.Helper
+namespace Helper
 {
     public class IO
     {
@@ -17,29 +17,35 @@ namespace NetLock_RMM_Server.Helper
             public DateTime last_modified { get; set; }
             public string sha512 { get; set; }
             public string guid { get; set; }
+            public string password { get; set; }
             public string access { get; set; }
         }
 
         // Get directories from path
         public static async Task<List<File_Or_Directory_Info>> Get_Directory_Index(string path)
         {
-            MySqlConnection conn = new MySqlConnection(await NetLock_Server.MySQL.Config.Get_Connection_String());
-
+            MySqlConnection conn = new MySqlConnection(NetLock_RMM_Server.Configuration.MySQL.Connection_String);
             var directoryDetails = new List<File_Or_Directory_Info>();
 
             try
             {
                 await conn.OpenAsync();
 
+                // Define the base directory (_private_files_admin)
+                string baseDirectory = Application_Paths._private_files.Replace('\\', '/').TrimEnd('/');
+
                 DirectoryInfo rootDirInfo = new DirectoryInfo(path);
 
                 // Directories
                 foreach (var directory in rootDirInfo.GetDirectories())
                 {
+                    // Remove the base path to get the relative path
+                    string relativeDirectoryPath = directory.FullName.Replace('\\', '/').Replace(baseDirectory, "").TrimStart('/');
+
                     var dirDetail = new File_Or_Directory_Info
                     {
                         name = directory.Name,
-                        path = directory.FullName,
+                        path = relativeDirectoryPath,
                         last_modified = directory.LastWriteTime,
                         size = await Get_Directory_Size(directory),
                         type = "0", // 0 = Directory
@@ -51,18 +57,22 @@ namespace NetLock_RMM_Server.Helper
                 // Files
                 foreach (var file in rootDirInfo.GetFiles())
                 {
-                    // file details
-                    string sha512 = String.Empty;
-                    string guid = String.Empty;
-                    string access = String.Empty;
+                    // Remove the base path to get the relative path
+                    string relativeFilePath = file.FullName.Replace('\\', '/').Replace(baseDirectory, "").TrimStart('/');
 
-                    string db_path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                    // Extract just the directory part of the path
+                    string relativeDirectoryPath = Path.GetDirectoryName(relativeFilePath);
 
+                    // Prepare the query
                     string query = "SELECT * FROM files WHERE name = @name AND path = @path;";
-
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@name", file.Name);
-                    cmd.Parameters.AddWithValue("@path", db_path);
+                    cmd.Parameters.AddWithValue("@path", relativeDirectoryPath);
+
+                    string sha512 = String.Empty;
+                    string guid = String.Empty;
+                    string password = String.Empty;
+                    string access = String.Empty;
 
                     using (DbDataReader reader = await cmd.ExecuteReaderAsync())
                     {
@@ -72,6 +82,7 @@ namespace NetLock_RMM_Server.Helper
                             {
                                 sha512 = reader["sha512"].ToString();
                                 guid = reader["guid"].ToString();
+                                password = reader["password"].ToString();
                                 access = reader["access"].ToString();
                             }
                         }
@@ -80,12 +91,13 @@ namespace NetLock_RMM_Server.Helper
                     var fileDetail = new File_Or_Directory_Info
                     {
                         name = file.Name,
-                        path = file.FullName,
+                        path = relativeDirectoryPath,
                         last_modified = file.LastWriteTime,
                         size = await Get_File_Size(file.FullName),
                         type = file.Extension,
                         sha512 = sha512,
                         guid = guid,
+                        password = password,
                         access = access
                     };
 

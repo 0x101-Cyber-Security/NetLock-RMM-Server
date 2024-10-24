@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NetFwTypeLib;
 
-namespace NetLock_Server.Microsoft_Defender_Firewall
+namespace NetLock_RMM_Server.Microsoft_Defender_Firewall
 {
     internal class Handler
     {

@@ -1,6 +1,6 @@
 ﻿using MySqlConnector;
-using NetLock_Server;
-using NetLock_Server.MySQL;
+using NetLock_RMM_Server;
+using NetLock_RMM_Server.MySQL;
 using System;
 using System.Data.Common;
 using System.IO;
@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using System.Text.Json;
 using System.Diagnostics;
+using System.Security.Principal;
 
 namespace NetLock_RMM_Server.Files
 {
@@ -17,6 +18,7 @@ namespace NetLock_RMM_Server.Files
         public string? command { get; set; }
         public string? path { get; set; }
         public string? name { get; set; }
+        public string? guid { get; set; }
     }
 
     public class Download_JSON
@@ -33,7 +35,7 @@ namespace NetLock_RMM_Server.Files
             {
                 bool api_key_exists = false;
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -72,16 +74,26 @@ namespace NetLock_RMM_Server.Files
             }
         }
 
-        public static async Task Register_File(string file_path)
+        public static async Task<string> Register_File (string file_path, string directory_path, string tenant_guid, string location_guid, string device_name)
         {
             try
             {
-                // Read file info
+                // Ensure the file_path is relative to _private_files_admin
+                string relativePath = Path.GetRelativePath(Application_Paths._private_files, file_path);
+
+                // Extract file information
                 string name = Path.GetFileName(file_path);
-                string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                string path = Path.GetRelativePath(Application_Paths._private_files, directory_path); // Use the directory path
+
+                // If the path equals base directory, set it to an empty string
+                if (string.IsNullOrEmpty(path) || path == ".")
+                {
+                    path = string.Empty;
+                }
+
                 string sha512 = await Helper.IO.Get_SHA512(file_path);
                 string guid = Guid.NewGuid().ToString();
+                string password = Guid.NewGuid().ToString();
                 string access = "Private";
 
                 Logging.Handler.Debug("Files.Register_File", "name", name);
@@ -89,14 +101,34 @@ namespace NetLock_RMM_Server.Files
                 Logging.Handler.Debug("Files.Register_File", "sha512", sha512);
                 Logging.Handler.Debug("Files.Register_File", "guid", guid);
                 Logging.Handler.Debug("Files.Register_File", "access", access);
+                Logging.Handler.Debug("Files.Register_File", "date", DateTime.Now.ToString());
+                Logging.Handler.Debug("Files.Register_File", "tenant_guid", tenant_guid);
+                Logging.Handler.Debug("Files.Register_File", "location_guid", location_guid);
+                Logging.Handler.Debug("Files.Register_File", "device_name", device_name);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                // Get the tenant id & location id with tenant_guid & location_guid
+                (int tenant_id, int location_id) = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+
+                // Get device ID
+                int device_id = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+
+                //  Create the JSON object
+                var jsonObject = new
+                {
+                    guid = guid,
+                };
+
+                // Convert the object into a JSON string
+                string register_json = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
+                Logging.Handler.Debug("Files.Register_File", "info_json ", register_json);
+
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
                     await conn.OpenAsync();
 
-                    // Check if already exists, if so, do update instead of insert.
+                    // Check if the file already exists
                     string query = "SELECT * FROM files WHERE name = @name AND path = @path;";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@name", name);
@@ -114,12 +146,12 @@ namespace NetLock_RMM_Server.Files
                     if (fileExists)
                     {
                         // Update file
-                        query = "UPDATE files SET name = @name, path = @path, sha512 = @sha512, guid = @guid, access = @access, date = @date WHERE path = @path;";
+                        query = "UPDATE files SET device_id = @device_id, name = @name, path = @path, sha512 = @sha512, guid = @guid, password = @password, access = @access, date = @date WHERE name = @name AND path = @path;";
                     }
                     else
                     {
                         // Insert file
-                        query = "INSERT INTO files (name, path, sha512, guid, access, date) VALUES (@name, @path, @sha512, @guid, @access, @date);";
+                        query = "INSERT INTO files (device_id, name, path, sha512, guid, password, access, date) VALUES (@device_id, @name, @path, @sha512, @guid, @password, @access, @date);";
                     }
 
                     cmd = new MySqlCommand(query, conn);
@@ -127,8 +159,10 @@ namespace NetLock_RMM_Server.Files
                     cmd.Parameters.AddWithValue("@path", path);
                     cmd.Parameters.AddWithValue("@sha512", sha512);
                     cmd.Parameters.AddWithValue("@guid", guid);
+                    cmd.Parameters.AddWithValue("@password", password);
                     cmd.Parameters.AddWithValue("@access", access);
                     cmd.Parameters.AddWithValue("@date", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@device_id", device_id);
 
                     Logging.Handler.Debug("Files.Register_File", "MySQL_Prepared_Query", query);
 
@@ -142,32 +176,31 @@ namespace NetLock_RMM_Server.Files
                 {
                     await conn.CloseAsync();
                 }
+
+                return register_json;
             }
             catch (Exception ex)
             {
                 Logging.Handler.Error("Files.Register_File", "general_error", ex.ToString());
+                return string.Empty;
             }
         }
 
-        private static async Task Unregister_File(string file_path)
+        private static async Task Unregister_File(string guid)
         {
             try
             {
-                // Read file info
-                string name = Path.GetFileName(file_path);
-                string path = Path.GetDirectoryName(file_path);
-                path = Regex.Replace(path, @"^.*?(?=\\admin)", "");
+                Console.WriteLine("Unregistering file with GUID: " + guid);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
                     await conn.OpenAsync();
 
-                    string query = "DELETE FROM files WHERE name = @name AND path = @path;";
+                    string query = "DELETE FROM files WHERE guid = @guid;";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@name", name);
-                    cmd.Parameters.AddWithValue("@path", path);
+                    cmd.Parameters.AddWithValue("@guid", guid);
 
                     Logging.Handler.Debug("Files.Unregister_File", "MySQL_Prepared_Query", query);
 
@@ -200,19 +233,34 @@ namespace NetLock_RMM_Server.Files
                 Logging.Handler.Debug("Files.Command", "command", command.command);
                 Logging.Handler.Debug("Files.Command", "path", command.path);
                 Logging.Handler.Debug("Files.Command", "name", command.name);
+                Logging.Handler.Debug("Files.Command", "guid", command.guid);
 
-                // Check if path contains base1337, cut the base1337 part out and replace it with the actual path
-                if (command.path.Contains("base1337"))
-                    command.path = command.path.Replace("base1337", Application_Paths._private_files_admin);
+                // Normalize the path based on the base path
+                string normalizedPath = command.path;
+
+                // Replace "base1337" with the actual base path if needed
+                if (normalizedPath.Contains("base1337"))
+                {
+                    normalizedPath = normalizedPath.Replace("base1337", Application_Paths._private_files);
+                }
+
+                // Sanitize and get the full path
+                string safePath = Path.GetFullPath(Path.Combine(Application_Paths._private_files, normalizedPath))
+                    .Replace('\\', '/').TrimEnd('/');
+
+                // Remove the base path for storage or processing
+                string relativePath = safePath.Replace(Application_Paths._private_files.Replace('\\', '/'), string.Empty).TrimStart('/');
 
                 if (command.command == "create_directory")
                 {
-                    if (!Directory.Exists(command.path))
-                        Directory.CreateDirectory(command.path);
+                    if (!Directory.Exists(safePath))
+                        Directory.CreateDirectory(safePath);
                 }
                 else if (command.command == "delete_directory")
                 {
-                    DirectoryInfo di = new DirectoryInfo(command.path);
+                    Console.WriteLine("Deleting directory with GUID: " + command.guid);
+                    Console.WriteLine("Safe path: " + safePath);
+                    DirectoryInfo di = new DirectoryInfo(safePath);
 
                     // Recursively delete files and directories if the directory exists
                     if (di.Exists)
@@ -222,33 +270,61 @@ namespace NetLock_RMM_Server.Files
                 }
                 else if (command.command == "delete_file")
                 {
-                    if (File.Exists(command.path))
+                    Console.WriteLine("Deleting file with GUID: " + command.guid);
+                    Console.WriteLine("Safe path: " + Path.Combine(safePath, command.name));
+
+                    if (File.Exists(Path.Combine(safePath, command.name))) 
                     {
-                        await Unregister_File(command.path); // Remove the file from the DB
-                        File.Delete(command.path);
+                        await Unregister_File(command.guid); // Remove the file from the DB
+                        File.Delete(Path.Combine(safePath, command.name));
                     }
                 }
                 else if (command.command == "rename")
                 {
-                    string newPath = Path.Combine(Path.GetDirectoryName(command.path), command.name);
+                    string oldPath = Path.GetDirectoryName(safePath);
+                    string newPath = Path.Combine(oldPath, command.name);
 
-                    if (File.Exists(command.path))
+                    if (File.Exists(safePath))
                     {
                         // Rename file
-                        File.Move(command.path, newPath);
+                        File.Move(safePath, newPath);
+
+                        // Update the path and name in the DB
+                        using (MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String))
+                        {
+                            try
+                            {
+                                await conn.OpenAsync();
+
+                                string query = "UPDATE files SET name = @name, path = @path WHERE guid = @guid;";
+                                MySqlCommand cmd = new MySqlCommand(query, conn);
+                                cmd.Parameters.AddWithValue("@guid", command.guid);
+                                cmd.Parameters.AddWithValue("@name", command.name);
+                                cmd.Parameters.AddWithValue("@path", relativePath);
+
+                                Logging.Handler.Debug("Files.Command", "MySQL_Prepared_Query", query);
+
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logging.Handler.Error("Files.Command", "MySQL_Query", ex.ToString());
+                            }
+                        }
                     }
-                    else if (Directory.Exists(command.path))
+                    else if (Directory.Exists(safePath))
                     {
                         // Rename directory
-                        Directory.Move(command.path, newPath);
+                        Directory.Move(safePath, newPath);
                     }
                 }
-            }            
+            }
             catch (Exception ex)
             {
                 Logging.Handler.Error("Files.Command", "general_error", ex.ToString());
             }
         }
+
 
         // Recursive method for deleting files and directories
         private static async Task DeleteDirectoryRecursively(DirectoryInfo directory)
@@ -277,8 +353,64 @@ namespace NetLock_RMM_Server.Files
             }
         }
 
+        // Verify device file access
+        public static async Task<bool> Verify_Device_File_Access(string tenant_guid, string location_guid, string device_name, string guid)
+        {
+            try
+            {
+                // Get the tenant id & location id with tenant_guid & location_guid
+                (int tenant_id, int location_id) = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Tenant_Location_Id(tenant_guid, location_guid);
+
+                // Get device ID
+                int device_id = await NetLock_RMM_Server.Agent.Windows.Helper.Get_Device_Id(device_name, tenant_id, location_id);
+
+                // Check if the device id matches with the file guid
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
+
+                try
+                {
+                    await conn.OpenAsync();
+
+                    string query = "SELECT * FROM files WHERE device_id = @device_id AND guid = @guid;";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@device_id", device_id);
+                    cmd.Parameters.AddWithValue("@guid", guid);
+
+                    Logging.Handler.Debug("Files.Verify_Device_File_Access", "MySQL_Prepared_Query", query);
+
+                    using (DbDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (reader.HasRows)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.Handler.Error("Files.Verify_Device_File_Access", "MySQL_Query", ex.ToString());
+                }
+                finally
+                {
+                    conn.Close();
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logging.Handler.Error("Files.Verify_Device_File_Access", "general_error", ex.ToString());
+                return false;
+            }
+        }
+
         // Download file
-        public static async Task<bool> Verify_File_Access(string guid, string api_key)
+        public static async Task<bool> Verify_File_Access(string guid, string password, string api_key)
         {
             bool access_granted = false;
 
@@ -286,7 +418,7 @@ namespace NetLock_RMM_Server.Files
             {
                 Logging.Handler.Debug("Files.Verify_File_Access", "guid", guid);
 
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -308,15 +440,28 @@ namespace NetLock_RMM_Server.Files
 
                             string access = reader.GetString(reader.GetOrdinal("access"));
 
+                            // Check if the file is public or private
                             if (access == "Public")
                                 access_granted = true;
                             else if (access == "Private")
                             {
-                                // Check if the API key is valid
-                                if (await Verify_Api_Key(api_key))
+                                // Check if the password is valid
+                                if (password == reader.GetString(reader.GetOrdinal("password")))
+                                {
                                     access_granted = true;
+                                }
                                 else
                                     access_granted = false;
+
+                                // Check if the API key is valid, if the password is invalid
+                                if (!access_granted)
+                                {
+                                    // Check if the API key is valid
+                                    if (await Verify_Api_Key(api_key))
+                                        access_granted = true;
+                                    else
+                                        access_granted = false;
+                                }
                             }
                         }
                         else
@@ -346,26 +491,13 @@ namespace NetLock_RMM_Server.Files
         }
 
         // Get file path by GUID
-        public static async Task<string> Get_File_Path_By_GUID(string json)
+        public static async Task<string> Get_File_Path_By_GUID(string guid)
         {
-            string guid = String.Empty;
-
-            // Deserialize JSON
-            try
-            {
-                Download_JSON download = JsonSerializer.Deserialize<Download_JSON>(json);
-                guid = download.guid;
-            }
-            catch (Exception ex)
-            {
-                Logging.Handler.Error("Files.Get_File_Path_By_GUID", "json_deserialize", ex.ToString());
-            }
-
             string file_path = String.Empty;
 
             try
             {
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {
@@ -427,7 +559,7 @@ namespace NetLock_RMM_Server.Files
 
             try
             {
-                MySqlConnection conn = new MySqlConnection(await Config.Get_Connection_String());
+                MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
                 try
                 {

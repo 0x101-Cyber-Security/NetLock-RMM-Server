@@ -1,9 +1,9 @@
 ﻿using MySqlConnector;
 using System.Data.Common;
 using System.Text.Json;
-using static NetLock_Server.Agent.Windows.Device_Handler;
+using static NetLock_RMM_Server.Agent.Windows.Device_Handler;
 
-namespace NetLock_Server.Agent.Windows
+namespace NetLock_RMM_Server.Agent.Windows
 {
     public class Event_Handler
     {
@@ -23,9 +23,11 @@ namespace NetLock_Server.Agent.Windows
             public string? last_boot { get; set; }
             public string? timezone { get; set; }
             public string? cpu { get; set; }
+            public string? cpu_usage { get; set; }
             public string? mainboard { get; set; }
             public string? gpu { get; set; }
             public string? ram { get; set; }
+            public string? ram_usage { get; set; }
             public string? tpm { get; set; }
             //public string? environment_variables { get; set; }
         }
@@ -51,7 +53,7 @@ namespace NetLock_Server.Agent.Windows
         {
             Logging.Handler.Debug("Agent.Windows.Event_Handler.Consume", "json", json);
 
-            MySqlConnection conn = new MySqlConnection(await MySQL.Config.Get_Connection_String());
+            MySqlConnection conn = new MySqlConnection(Configuration.MySQL.Connection_String);
 
             try
             {
