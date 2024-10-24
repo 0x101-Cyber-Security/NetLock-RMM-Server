@@ -1485,7 +1485,6 @@ if (role_remote)
     {
         try
         {
-            Console.WriteLine("Request received.");
             Logging.Handler.Debug("POST Request Mapping", "/Agent/Windows/Remote/Command", "Request received.");
 
             // Add headers
@@ -1522,12 +1521,8 @@ if (role_remote)
                 json = await reader.ReadToEndAsync() ?? string.Empty;
             }
 
-            //Console.WriteLine("Request: " + json);
-
             // Verify the device
             string device_status = await Authentification.Verify_Device(json, ip_address_external, true);
-
-            Console.WriteLine("Device status: " + device_status);
 
             // Check if the device is authorized, synced, or not synced. If so, get the policy
             if (device_status == "authorized" || device_status == "synced" || device_status == "not_synced")
@@ -1546,13 +1541,7 @@ if (role_remote)
                     // Extract "response_id" and "result"
                     responseId = remoteControlElement.GetProperty("response_id").GetString();
                     result = remoteControlElement.GetProperty("result").GetString();
-
-                    // Output the values
-                    Console.WriteLine($"Response ID: {responseId}");
-                    //Console.WriteLine($"Result: {result}");
                 }
-
-                //await ReceiveClientResponse(responseId, result);
 
                 string admin_identity_info_json = CommandHubSingleton.Instance.GetAdminIdentity(responseId);
 
@@ -1571,14 +1560,10 @@ if (role_remote)
                     admin_client_id = admin_client_id_element.ToString();
                 }
 
-                Console.WriteLine("Admin client ID: " + admin_client_id);
-
-                await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", result);
+                await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControlScreenCapture", result);
 
                 // Remove the response ID from the dictionary
                 CommandHubSingleton.Instance.RemoveAdminCommand(responseId);
-
-                Console.WriteLine("Response sent.");
 
                 // Return the device status
                 context.Response.StatusCode = 200;

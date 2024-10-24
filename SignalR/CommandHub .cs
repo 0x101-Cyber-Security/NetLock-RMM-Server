@@ -80,18 +80,11 @@ namespace NetLock_RMM_Server.SignalR
             public Command? command { get; set; }
         }
 
-        //private readonly ConcurrentDictionary<string, string> _clientConnections;
-        //private readonly ConcurrentDictionary<string, string> _adminCommands = new ConcurrentDictionary<string, string>();
-
-        //private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _responseTasks;
-
         public override Task OnConnectedAsync()
         {
             try
             {
                 Logging.Handler.Debug("SignalR CommandHub", "OnConnectedAsync", "Client connected");
-
-                Console.WriteLine("Client connected");
 
                 var clientId = Context.ConnectionId;
 
@@ -135,12 +128,6 @@ namespace NetLock_RMM_Server.SignalR
             try
             {
                 Logging.Handler.Debug("SignalR CommandHub", "OnDisconnectedAsync", "Client disconnected");
-
-                Console.WriteLine("Client disconnected");
-
-                Console.WriteLine(DateTime.Now);
-
-                Console.WriteLine("Client disconnected" + exception.Message);
 
                 var clientId = Context.ConnectionId;
 
@@ -238,8 +225,6 @@ namespace NetLock_RMM_Server.SignalR
                     return admin_identity_info_json;
                 }
 
-                Console.WriteLine("responseid not found: " + responseId);
-
                 return null; // If the responseId is not found
             }
             catch (Exception ex)
@@ -278,8 +263,6 @@ namespace NetLock_RMM_Server.SignalR
                 // Save responseId & admin_identity_info_json
                 CommandHubSingleton.Instance.AddAdminCommand(responseId, admin_identity_info_json);
 
-                Console.WriteLine("added responseId to admin commands: " + responseId);
-
                 // Add the responseId to the command JSON
                 command_json = AddResponseIdToJson(command_json, responseId);
 
@@ -302,12 +285,10 @@ namespace NetLock_RMM_Server.SignalR
             try
             {
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Received response from client. ResponseId: {responseId} response: {response}");
-                Console.WriteLine("received responseId:" + responseId);
 
                 if (String.IsNullOrEmpty(responseId) || String.IsNullOrEmpty(response))
                 {
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", "ResponseId or response is empty.");
-                    Console.WriteLine("ResponseId or response is empty.");
                     return;
                 }
 
@@ -317,18 +298,16 @@ namespace NetLock_RMM_Server.SignalR
                 // Output all admin client information
                 foreach (var client in CommandHubSingleton.Instance._adminCommands)
                 {
-                    Console.WriteLine("admin client info: " + client.Key + " " + client.Value);
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Connected admin clients: {client.Key}, {client.Value}");
                 }
-
-                Console.WriteLine(admin_identity_info_json);
 
                 string admin_client_id = String.Empty;
                 string admin_username = String.Empty;
                 string device_id = String.Empty;
-                string command = String.Empty;
                 int type = 0;
+                string command = String.Empty;
                 int file_browser_command = 0;
+                string powershell_code = String.Empty;
 
                 // Deserialisierung des gesamten JSON-Strings
                 using (JsonDocument document = JsonDocument.Parse(admin_identity_info_json))
@@ -345,13 +324,17 @@ namespace NetLock_RMM_Server.SignalR
                     JsonElement device_id_element = document.RootElement.GetProperty("device_id");
                     device_id = device_id_element.ToString();
 
+                    // Get the command type from the JSON
+                    JsonElement type_element = document.RootElement.GetProperty("type");
+                    type = type_element.GetInt32();
+
                     // Get the command from the JSON
                     JsonElement command_element = document.RootElement.GetProperty("command");
                     command = command_element.ToString();
 
-                    // Get the command type from the JSON
-                    JsonElement type_element = document.RootElement.GetProperty("type");
-                    type = type_element.GetInt32();
+                    // Get the powershell code
+                    JsonElement powershell_code_element = document.RootElement.GetProperty("powershell_code");
+                    powershell_code = powershell_code_element.ToString();
 
                     // Get the file browser command from the JSON
                     JsonElement file_browser_command_element = document.RootElement.GetProperty("file_browser_command");
@@ -375,7 +358,7 @@ namespace NetLock_RMM_Server.SignalR
                         cmd.Parameters.AddWithValue("@device_id", device_id);
                         cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                         cmd.Parameters.AddWithValue("@author", admin_username);
-                        cmd.Parameters.AddWithValue("@command", command);
+                        cmd.Parameters.AddWithValue("@command", powershell_code);
                         cmd.Parameters.AddWithValue("@result", response);
 
                         cmd.ExecuteNonQuery();
@@ -468,16 +451,18 @@ namespace NetLock_RMM_Server.SignalR
                     Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseTaskManagerAction", $"Response sent to admin client {admin_client_id}: {response}");
                     await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseTaskManagerAction", response);
                 }
-                else if (type == 4) // Remote Control
+                else if (type == 4) // Remote Control // Deactivated due to issues in the signalr client not sending back answers if the 
                 {
-                    Console.WriteLine("Remote Control");
-
-                    Console.WriteLine(admin_client_id);
-
-                    Console.WriteLine("length: " + response.Length);
-
-                    //Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControl", $"Response sent to admin client {admin_client_id}: {response}");
-                    await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControl", "test");
+                    if (command == "3") // get screen indexes
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControlScreenIndexes", $"Response sent to admin client {admin_client_id}: {response}");
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControlScreenIndexes", response);
+                    }
+                    else if (command == "4") // get users
+                    {
+                        Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponseRemoteControlUsers", $"Response sent to admin client {admin_client_id}: {response}");
+                        await CommandHubSingleton.Instance.HubContext.Clients.Client(admin_client_id).SendAsync("ReceiveClientResponseRemoteControlUsers", response);
+                    }
                 }
 
                 Logging.Handler.Debug("SignalR CommandHub", "ReceiveClientResponse", $"Response sent to admin client {admin_client_id}: {response}");
@@ -554,7 +539,8 @@ namespace NetLock_RMM_Server.SignalR
                     admin_client_id = admin_client_id, // admin client id
                     admin_username = admin_identity.admin_username, // admin_username
                     device_id = target_device.device_id, // device_id
-                    command = command.powershell_code, // device_id
+                    command = command.command, // device_id
+                    powershell_code = command.powershell_code, // device_id
                     type = command.type, // represents the command type. Needed for the response to know how to handle the response
                     file_browser_command = command.file_browser_command, // represents the file browser command type. Needed for the response to know how to handle the response
                 };
